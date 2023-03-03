@@ -4,7 +4,6 @@ namespace CSVDB;
 
 use CSVDB\Helpers\CSVConfig;
 use CSVDB\Helpers\CSVUtilities;
-use League\Csv\AbstractCsv;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
@@ -20,11 +19,17 @@ class CSVDB
 
     private array $select = array();
     private array $where = array();
+    private string $operator = CSVDB::AND;
     private array $order = array();
     private int $limit = 0;
 
     const ASC = "asc";
     const DESC = "desc";
+
+    const AND = "and";
+    const OR = "or";
+
+    const NEG = true;
 
     /**
      * @throws \Exception
@@ -43,9 +48,9 @@ class CSVDB
      * @throws InvalidArgument
      * @throws Exception
      */
-    private function writer(): AbstractCsv
+    private function writer(string $mode = "a+"): Writer
     {
-        $csv = Writer::createFromPath($this->document, "a+");
+        $csv = Writer::createFromPath($this->document, $mode);
         $csv->setDelimiter($this->config->delimiter);
         return $csv;
     }
@@ -54,29 +59,41 @@ class CSVDB
      * @throws InvalidArgument
      * @throws Exception
      */
-    private function reader(): AbstractCsv
+    private function reader(): Reader
     {
-        $csv = Reader::createFromPath($this->document);
-        $csv->setDelimiter($this->config->delimiter);
+        $reader = Reader::createFromPath($this->document);
+        $reader->setDelimiter($this->config->delimiter);
         if ($this->config->headers) {
-            $csv->setHeaderOffset(0);
+            $reader->setHeaderOffset(0);
         }
-        return $csv;
+        return $reader;
     }
+
+    private function reset(): void
+    {
+        $this->select = array();
+        $this->where = array();
+        $this->operator = CSVDB::AND;
+        $this->order = array();
+        $this->limit = 0;
+    }
+
+    // CREATE
 
     /**
      * @throws CannotInsertRecord
      */
-    public function insert(array $data)
+    public function insert(array $data): void
     {
         $writer = $this->writer();
         if (is_array($data[0])) {
-            $test = $writer->insertAll($data);
+            $writer->insertAll($data);
         } else {
-            $test = $writer->insertOne($data);
+            $writer->insertOne($data);
         }
-        var_dump($test);
     }
+
+    // READ
 
     public function select(array $select = array()): CSVDB
     {
@@ -109,29 +126,52 @@ class CSVDB
         }, ARRAY_FILTER_USE_KEY);
     }
 
-    public function where(array $where = array()): CSVDB
+    public function where(array $where = array(), string $operator = CSVDB::AND): CSVDB
     {
         $this->where = $where;
+        $this->operator = $operator;
         return $this;
     }
 
-    private function where_stmt(array $row): bool
+    private function where_stmt(array $row, array $where_array = array()): bool
     {
-        $return = true;
-        if (count($this->where) > 1) {
-            foreach ($this->where as $where) {
-                $return = $return && $this->create_where_stmt($row, $where);
+        if (count($where_array) == 0) {
+            $where_array = $this->where;
+        }
+        if (count($where_array) > 1) {
+            $return = null;
+            foreach ($where_array as $where) {
+                $return = $this->create_where_stmts($return, $row, $where, $this->operator);
+            }
+            return $return;
+        } else {
+            return $this->create_where_stmt($row, $where_array);
+        }
+    }
+
+    private function create_where_stmts(?bool $return, array $row, array $where, string $operator)
+    {
+        if (is_bool($return)) {
+            if ($operator == CSVDB::AND) {
+                return $return && $this->create_where_stmt($row, $where);
+            } else {
+                return $return || $this->create_where_stmt($row, $where);
             }
         } else {
-            $return = $this->create_where_stmt($row, $this->where);
+            return $this->create_where_stmt($row, $where);
         }
-        return $return;
     }
 
     private function create_where_stmt(array $row, array $where): bool
     {
         $key = key($where);
         $value = $where[$key];
+        if (is_array($value)) {
+            if ($value[1]) {
+                return is_bool(strpos($row[$key], $value[0]));
+            }
+            return strpos($row[$key], $value[0]) !== false;
+        }
         return strpos($row[$key], $value) !== false;
     }
 
@@ -175,11 +215,7 @@ class CSVDB
      */
     public function get(): array
     {
-        $reader = Reader::createFromPath($this->document);
-        $reader->setDelimiter($this->config->delimiter);
-        if ($this->config->headers) {
-            $reader->setHeaderOffset(0);
-        }
+        $reader = $this->reader();
         $stmt = Statement::create();
         // where
         if (count($this->where) > 0) {
@@ -199,7 +235,52 @@ class CSVDB
         }
 
         $records = $stmt->process($reader);
+
+        // select
         $data = $this->select_stmt($records);
+
+        // reset
+        $this->reset();
         return $data;
     }
+
+    // UPDATE
+
+
+    // DELETE
+
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
+    public function delete(array $where): void
+    {
+        if (count($where) == 0) {
+            throw new \Exception('Deleting all entries will empty the your file!');
+        }
+
+        $reader = $this->reader();
+        $stmt = Statement::create()->where(function ($row) use ($where) {
+            return $this->where_stmt($row, $this->delete_where_stmt($where));
+        });
+        $records = $stmt->process($reader);
+
+        $headers = $reader->getHeader();
+        $data = $records->jsonSerialize();
+
+        $writer = $this->writer("w+");
+        $writer->insertOne($headers);
+        $writer->insertAll($data);
+    }
+
+    private function delete_where_stmt(array $where): array
+    {
+        $key = key($where);
+        $value = $where[$key];
+        if (is_array($value)) {
+            return [$key => $value[0]];
+        }
+        return [$key => [$value, CSVDB::NEG]];
+    }
+
 }

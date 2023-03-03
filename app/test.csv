@@ -5,3 +5,7 @@ john,doe,john.doe@example.com
 "test insert 1","test insert 2","test insert 3"
 john,joe,test2
 john,sue,test3
+test1,test2,"test test3"
+1,2,3
+foo,bar,baz
+"test insert 1","test insert 2","test insert 3"

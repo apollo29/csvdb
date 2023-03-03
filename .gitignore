@@ -1,5 +1,6 @@
 /vendor/
 .idea
 /app/logs/*
+/app/*.csv
 composer.lock
 sandbox/

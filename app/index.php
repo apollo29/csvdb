@@ -44,13 +44,17 @@
 <pre>
     <?php
 
+
     $data = $test
         ->select(["test1", "test test3"])
-        ->where(["test1" => "john"])
+        ->where(["test1" => ["john", CSVDB::NEG]])
         ->orderBy(["test2" => CSVDB::ASC])
         ->get();
 
     var_dump($data);
+
+
+    //$test->delete(["test1" => "john"]);
 
     ?>
 </pre>
