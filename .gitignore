@@ -1,0 +1,5 @@
+/vendor/
+.idea
+/app/logs/*
+composer.lock
+sandbox/

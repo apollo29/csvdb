@@ -1,0 +1,22 @@
+{
+  "name": "apollo29/csvdb",
+  "description": "A PHP Class that reads CSV file as a database.",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "CSVDB\\": "src/CsvDB/"
+    }
+  },
+  "require": {
+    "php": "^7.4 || ^8.0",
+    "parsecsv/php-parsecsv": "^1.2",
+    "league/csv": "^9.8"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Thomas D'Ascoli",
+      "email": "thomas@dasco.li"
+    }
+  ]
+}
