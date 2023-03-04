@@ -44,7 +44,7 @@
 <pre>
     <?php
 
-
+    /*
     $data = $test
         ->select(["test1", "test test3"])
         ->where(["test1" => ["john", CSVDB::NEG]])
@@ -53,8 +53,10 @@
 
     var_dump($data);
 
-
     //$test->delete(["test1" => "john"]);
+    */
+
+    $test->update(["test3" => "update test"], ["test1" => "john"]);
 
     ?>
 </pre>

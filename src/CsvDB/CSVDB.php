@@ -14,10 +14,19 @@ use League\Csv\Writer;
 
 class CSVDB
 {
+    /*
+     * todo
+     * select, where, delete, orderBy = check if header exist?!
+     * delete return?
+     * insert return?
+     * update return?
+     */
+
     public string $document;
     public CSVConfig $config;
 
     private array $select = array();
+    private array $update = array();
     private array $where = array();
     private string $operator = CSVDB::AND;
     private array $order = array();
@@ -246,6 +255,37 @@ class CSVDB
 
     // UPDATE
 
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
+    public function update(array $update, array $where = array()): void
+    {
+        if (count($update) == 0) {
+            throw new \Exception('Nothing to update.');
+        }
+
+        $records = $this->select()->where($where)->get();
+
+        $this->delete($where);
+
+        $data = array();
+        foreach ($records as $record) {
+            $data[] = $this->update_stmt($record, $update);
+        }
+
+        if (count($data) > 0) {
+            $this->insert($data);
+        }
+    }
+
+    private function update_stmt(array $record, array $update): array
+    {
+        foreach ($update as $key => $value) {
+            $record[$key] = $value;
+        }
+        return $record;
+    }
 
     // DELETE
 
