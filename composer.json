@@ -9,7 +9,6 @@
   },
   "require": {
     "php": "^7.4 || ^8.0",
-    "parsecsv/php-parsecsv": "^1.2",
     "league/csv": "^9.8"
   },
   "require-dev": {
