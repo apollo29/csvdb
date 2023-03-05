@@ -339,7 +339,7 @@ class CSVDB
      * @throws InvalidArgument
      * @throws Exception
      */
-    public function delete(array $where): void
+    public function delete(array $where = array()): void
     {
         if (count($where) == 0) {
             $this->delete_all();

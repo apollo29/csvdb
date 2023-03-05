@@ -205,7 +205,7 @@ class CSVDBTest extends TestCase
 
         $test1 = array();
         $test1[] = $raw[0];
-        $data1 = $csvdb->select()->where([["header2" => "test2_1"],["header3" => "value5"]])->get();
+        $data1 = $csvdb->select()->where([["header2" => "test2_1"], ["header3" => "value5"]])->get();
         $this->assertEquals($test1, $data1);
     }
 
@@ -248,6 +248,7 @@ class CSVDBTest extends TestCase
     }
 
     // UPDATE
+
     public function testUpdateDefaultAll()
     {
         $raw = $this->prepareDefaultData();
@@ -281,4 +282,28 @@ class CSVDBTest extends TestCase
     }
 
     // DELETE
+
+    public function testDeleteAll()
+    {
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $csvdb->delete();
+        $data1 = $csvdb->select()->get();
+        $this->assertEmpty($data1);
+    }
+
+    public function testDeleteDefault()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = array();
+        $test1[] = $raw[3];
+        $test1[] = $raw[4];
+        $csvdb->delete(["header2" => "test2_1"]);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+    }
 }
