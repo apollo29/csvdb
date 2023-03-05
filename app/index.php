@@ -61,11 +61,11 @@
     {
         $header = array('header1', 'header2', 'header3');
         $data = array(
-            array('row7', 'test2_1', 'value5'),
-            array('row2', 'test2_1', 'value4'),
-            array('row3', 'test2_1', 'value3'),
-            array('row4', 'test2_2', 'value2'),
-            array('row5', 'test2_3', 'value1')
+            array('row6', 'test2_1', 'value5'),
+            array('row7', 'test2_1', 'value4'),
+            array('row8', 'test2_1', 'value3'),
+            array('row9', 'test2_2', 'value2'),
+            array('row10', 'test2_3', 'value1')
         );
 
         $raw = array();
@@ -84,12 +84,16 @@
 
     //var_dump($test1[0]);
 
-    //$csvdb->upsert($test1[0]);
-    //$csvdb->insert($test1[0]);
-    //$data = $csvdb->select()->get();
-    $data = $csvdb->select()->orderBy(["header3" => CSVDB::DESC])->get();
-    var_dump($data);
+    $csvdb->insert($test1[2]);
+    $data = $csvdb->select()->get();
+    //var_dump($data);
+    $data = $csvdb->select()->orderBy(["header3" => CSVDB::ASC])->get();
+    //var_dump($data);
+    $csvdb->upsert($test1[1]);
+    $csvdb->delete(["header1"=>"row1"]);
 
+    $data = $csvdb->select()->get();
+    //var_dump($data);
     ?>
 </pre>
 

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \CSVDB\CSVDB
- * @uses \CSVDB\CSVDB
+ * @uses   \CSVDB\CSVDB
  */
 class CSVDBTest extends TestCase
 {

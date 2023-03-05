@@ -4,19 +4,21 @@ declare(strict_types=1);
 namespace CSVDB\Helpers;
 
 use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \CSVDB\Helpers\CSVUtilities
- * @uses \CSVDB\Helpers\CSVUtilities
+ * @uses   \CSVDB\Helpers\CSVUtilities
  */
 class CSVUtilitiesTest extends TestCase
 {
+    protected vfsStreamDirectory $file_system;
     protected string $filename = "test.csv";
 
     protected function setUp(): void
     {
-        vfsStream::setup("assets/");
+        $this->file_system = vfsStream::setup("assets/");
         $fp = fopen(vfsStream::url("assets/" . $this->filename), 'w');
         fputcsv($fp, array('row1', 'test2_1', 'value5'));
         fclose($fp);
@@ -39,5 +41,11 @@ class CSVUtilitiesTest extends TestCase
 
         $file4 = vfsStream::url("assets/not_exist.txt");
         $this->assertFalse(CSVUtilities::is_csv($file4));
+    }
+
+    public function testCsv_dir()
+    {
+        $file1 = vfsStream::url("assets/" . $this->filename);
+        $this->assertEquals(CSVUtilities::csv_dir($file1), $this->file_system->url());
     }
 }

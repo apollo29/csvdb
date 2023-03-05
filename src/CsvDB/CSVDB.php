@@ -16,14 +16,8 @@ class CSVDB
 {
     /*
      * todo
-     * select, where, delete, orderBy = check if header exist?!
-     * delete return?
-     * insert return?
-     * update return?
-     * set index column! and check if unique?
-     * custom unique
-     * cache
-     * history
+     * index column: check if unique?
+     * custom unique?
      */
 
     public string $document;
@@ -35,6 +29,11 @@ class CSVDB
     private array $order = array();
     private int $limit = 0;
     private bool $count = false;
+
+    private Reader $cache;
+
+    private string $basedir;
+    private string $history;
 
     const ASC = "asc";
     const DESC = "desc";
@@ -55,6 +54,12 @@ class CSVDB
 
         $this->config = $config ?: CSVConfig::default();
         $this->document = $document;
+
+        // cache
+        $this->setup_cache();
+
+        // history
+        $this->setup_history($document);
     }
 
     /**
@@ -72,14 +77,65 @@ class CSVDB
      * @throws InvalidArgument
      * @throws Exception
      */
-    private function reader(): Reader
+    private function reader(bool $forced = false): Reader
     {
-        $reader = Reader::createFromPath($this->document);
-        $reader->setDelimiter($this->config->delimiter);
-        if ($this->config->headers) {
-            $reader->setHeaderOffset(0);
+        if ($forced or isset($this->cache)) {
+            $reader = Reader::createFromPath($this->document);
+            $reader->setDelimiter($this->config->delimiter);
+            if ($this->config->headers) {
+                $reader->setHeaderOffset(0);
+            }
+            return $reader;
         }
-        return $reader;
+        return $this->cache;
+    }
+
+    private function setup_cache(): void
+    {
+        if ($this->config->cache) {
+            $this->cache();
+        }
+    }
+
+    private function cache(): void
+    {
+        $this->cache = $this->reader(true);
+    }
+
+    public function setup_history(): void
+    {
+        $dir = $this->history_dir();
+        $files = scandir($dir, SCANDIR_SORT_DESCENDING);
+        if (is_file($files[0])) {
+            $latest = $files[0];
+            var_dump($latest);
+            if (md5_file($this->document) !== md5_file($dir . $latest)) {
+                $this->history();
+            }
+        } else {
+            $this->history();
+        }
+    }
+
+    private function history_dir(): string
+    {
+        if (!isset($this->basedir)) {
+            $this->basedir = CSVUtilities::csv_dir($this->document);
+        }
+
+        $dir = $this->basedir . "/history/";
+        if (!file_exists($dir)) {
+            mkdir($dir);
+        }
+        return $dir;
+    }
+
+    private function history(): void
+    {
+        $dir = $this->history_dir();
+        $time = date_format(new \DateTime(), "YmdHisu");
+        $filename = $dir . $time . "_" . $this->document;
+        copy($this->document, $filename);
     }
 
     // CREATE
@@ -95,6 +151,16 @@ class CSVDB
             $writer->insertAll($data);
         } else {
             $writer->insertOne($data);
+        }
+
+        // cache
+        if ($this->config->cache) {
+            $this->cache();
+        }
+
+        // history
+        if ($this->config->history) {
+            $this->history();
         }
     }
 
@@ -260,18 +326,21 @@ class CSVDB
     {
         $reader = $this->reader();
         $stmt = Statement::create();
+
         // where
         if (count($this->where) > 0) {
             $stmt = $stmt->where(function ($row) {
                 return $this->where_stmt($row);
             });
         }
+
         // order by
         if (count($this->order) > 0) {
             $stmt = $stmt->orderBy(function ($row1, $row2) {
                 return $this->order_stmt($row1, $row2);
             });
         }
+
         // limit
         if ($this->limit > 0) {
             $stmt = $stmt->limit($this->limit);
@@ -279,12 +348,12 @@ class CSVDB
 
         $records = $stmt->process($reader);
 
-        // select
-        $data = $this->select_stmt($records);
-
-        // count
         if ($this->count) {
-            $data = array("count" => count($data));
+            // count
+            $data = array("count" => $records->count());
+        } else {
+            // select
+            $data = $this->select_stmt($records);
         }
 
         // reset
@@ -402,6 +471,16 @@ class CSVDB
             $writer = $this->writer("w+");
             $writer->insertOne($headers);
             $writer->insertAll($data);
+        }
+
+        // cache
+        if ($this->config->cache) {
+            $this->cache();
+        }
+
+        // history
+        if ($this->config->history) {
+            $this->history();
         }
     }
 
