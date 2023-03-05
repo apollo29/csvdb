@@ -57,8 +57,37 @@
     $test->update(["test3" => "update test"], ["test1" => "john"]);
     */
 
-    //$csvdb->update(["header2" => "update"], ["header2" => "test2_1"]);
+    function prepareDefaultData(): array
+    {
+        $header = array('header1', 'header2', 'header3');
+        $data = array(
+            array('row1', 'test2_1', 'value5'),
+            array('row2', 'test2_1', 'value4'),
+            array('row3', 'test2_1', 'value3'),
+            array('row4', 'test2_2', 'value2'),
+            array('row5', 'test2_3', 'value1')
+        );
+
+        $raw = array();
+        $raw[] = [$header[0] => $data[0][0], $header[1] => $data[0][1], $header[2] => $data[0][2]];
+        $raw[] = [$header[0] => $data[1][0], $header[1] => $data[1][1], $header[2] => $data[1][2]];
+        $raw[] = [$header[0] => $data[2][0], $header[1] => $data[2][1], $header[2] => $data[2][2]];
+        $raw[] = [$header[0] => $data[3][0], $header[1] => $data[3][1], $header[2] => $data[3][2]];
+        $raw[] = [$header[0] => $data[4][0], $header[1] => $data[4][1], $header[2] => $data[4][2]];
+        return $raw;
+    }
+
+    $test1 = prepareDefaultData();
+    $test1[0]["header2"] = "update0";
+    $test1[1]["header2"] = "update1";
+    $test1[2]["header2"] = "update2";
+
+    //var_dump($test1[0]);
+
+    $csvdb->upsert($test1[0], [["header2" => "test2_1"], ["header3" => "value5"]]);
+    //$csvdb->insert($test1[0]);
     $data = $csvdb->select()->get();
+    //$data = $csvdb->select()->where(["header2" => "test2_1","header3" => "value5"], CSVDB::OR)->get();
     var_dump($data);
 
     ?>

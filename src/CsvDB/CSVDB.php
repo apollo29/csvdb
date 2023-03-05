@@ -30,6 +30,7 @@ class CSVDB
     private string $operator = CSVDB::AND;
     private array $order = array();
     private int $limit = 0;
+    private bool $count = false;
 
     const ASC = "asc";
     const DESC = "desc";
@@ -84,6 +85,7 @@ class CSVDB
         $this->operator = CSVDB::AND;
         $this->order = array();
         $this->limit = 0;
+        $this->count = false;
     }
 
     private function headers(): array
@@ -100,10 +102,27 @@ class CSVDB
     public function insert(array $data): void
     {
         $writer = $this->writer();
+        $data = $this->insert_prepare_stmt($data);
         if (is_array($data[0])) {
             $writer->insertAll($data);
         } else {
             $writer->insertOne($data);
+        }
+    }
+
+    private function insert_prepare_stmt(array $data): array
+    {
+        if ($this->has_headers($this->headers(), $data)) {
+            if ($this->has_multiple_records($data)) {
+                $records = array();
+                foreach ($data as $record) {
+                    $records[] = array_values($record);
+                }
+                return $records;
+            }
+            return array_values($data);
+        } else {
+            return $data;
         }
     }
 
@@ -158,7 +177,8 @@ class CSVDB
                 $return = $this->create_where_stmts($return, $row, $where, $this->operator);
             }
             return $return;
-        } else {
+        }
+        else {
             return $this->create_where_stmt($row, $where_array);
         }
     }
@@ -193,7 +213,7 @@ class CSVDB
     {
         if (is_array($orderVal)) {
             $key = key($orderVal);
-            if (is_numeric($key)) {
+            if ($this->has_multiple_records($orderVal)) {
                 $order = [$orderVal[$key] => self::ASC];
             } else {
                 $order = $orderVal;
@@ -234,6 +254,12 @@ class CSVDB
         return $this;
     }
 
+    public function count(): CSVDB
+    {
+        $this->count = true;
+        return $this;
+    }
+
     /**
      * @throws InvalidArgument
      * @throws Exception
@@ -264,6 +290,11 @@ class CSVDB
         // select
         $data = $this->select_stmt($records);
 
+        // count
+        if ($this->count) {
+            return array("count" => count($data));
+        }
+
         // reset
         $this->reset();
         return $data;
@@ -275,7 +306,7 @@ class CSVDB
      * @throws InvalidArgument
      * @throws Exception
      */
-    public function update(array $update, array $where = array()): void
+    public function update(array $update = array(), array $where = array()): void
     {
         if (count($update) == 0) {
             throw new \Exception('Nothing to update.');
@@ -299,9 +330,7 @@ class CSVDB
         if (count($where) == 0) {
             return $this->update_stmt($record, $update);
         } else {
-            $key = key($where);
-            $value = $where[$key];
-            if (is_array($value)) {
+            if ($this->has_multiple_records($where)) {
                 foreach ($where as $check) {
                     if ($this->check_update_stmt($record, $check)) {
                         return $this->update_stmt($record, $update);
@@ -331,7 +360,48 @@ class CSVDB
         return $record;
     }
 
-    // todo upsert
+    /**
+     * @throws InvalidArgument
+     * @throws CannotInsertRecord
+     * @throws Exception
+     */
+    public function upsert(array $update, array $where = array()): void
+    {
+        if (count($update) == 0) {
+            throw new \Exception('Nothing to update/insert.');
+        } elseif (is_array($update[0])) {
+            throw new \Exception('Update/insert only one row.');
+        }
+
+        $count = $this->select()->count()->where($where)->get();
+        if ($count["count"] > 0) {
+            $this->update($update, $where);
+        } else {
+            $this->insert($update);
+        }
+    }
+
+    private function has_headers(array $headers, array $update): bool
+    {
+        $hasHeader = false;
+        $record = $update;
+        if ($this->has_multiple_records($update)) {
+            $key = key($update);
+            $record = $update[$key];
+        }
+        foreach ($headers as $header) {
+            if (array_key_exists($header, $record)) {
+                $hasHeader = true;
+            }
+        }
+        return $hasHeader;
+    }
+
+    private function has_multiple_records($data): bool
+    {
+        $key = key($data);
+        return is_array($data[$key]);
+    }
 
     // DELETE
 

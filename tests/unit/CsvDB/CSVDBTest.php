@@ -145,12 +145,12 @@ class CSVDBTest extends TestCase
         $test1[] = $raw[2];
         $test1[] = $raw[1];
         $test1[] = $raw[0];
+
         $data1 = $csvdb->select()->orderBy("header3")->get();
-        $this->assertEquals($test1, $data1);
+        $this->assertEquals($raw, $data1);
 
         $data2 = $csvdb->select()->orderBy(["header3"])->get();
-        $this->assertEquals($test1, $data2);
-
+        $this->assertEquals($raw, $data2);
 
         $data3 = $csvdb->select()->orderBy(["header3" => CSVDB::ASC])->get();
         $this->assertEquals($test1, $data3);
@@ -203,6 +203,20 @@ class CSVDBTest extends TestCase
         $this->assertEquals($test1, $data1);
     }
 
+    public function testSelectCustomWhereOR()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = array();
+        $test1[] = $raw[0];
+        $test1[] = $raw[1];
+        $test1[] = $raw[2];
+        $data1 = $csvdb->select()->where([["header2" => "test2_1"],["header3" => "value5"]], CSVDB::OR)->get();
+        $this->assertEquals($test1, $data1);
+    }
+
     public function testSelectDefaultWhereOrder()
     {
         $raw = $this->prepareDefaultData();
@@ -228,6 +242,21 @@ class CSVDBTest extends TestCase
         $test1[] = $raw[1];
         $data1 = $csvdb->select()->where(["header2" => "test2_1"])->orderBy("header3")->limit(2)->get();
         $this->assertEquals($test1, $data1);
+    }
+
+    public function testSelectDefaultCount()
+    {
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $data1 = $csvdb->select()->count()->where(["header2" => "test2_1"])->get();
+        $this->assertEquals(["count" => 3], $data1);
+
+        $data2 = $csvdb->select()->count()->where(["header2" => "test2_1"])->limit(1)->get();
+        $this->assertEquals(["count" => 1], $data2);
+
+        $data3 = $csvdb->select()->where([["header2" => "test2_1"], ["header3" => "value5"]])->get();
+        $this->assertEquals(["count" => 1], $data3);
     }
 
     public function testSelectCustom()
@@ -273,6 +302,74 @@ class CSVDBTest extends TestCase
         $csvdb->update(["header2" => "update"], ["header2" => "test2_1"]);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
+    }
+
+    public function testUpdateDefaultMultipleFields()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = $raw;
+        $test1[0]["header2"] = "update";
+        $test1[0]["header3"] = "update2";
+        $test1[1]["header2"] = "update";
+        $test1[1]["header3"] = "update2";
+        $test1[2]["header2"] = "update";
+        $test1[2]["header3"] = "update2";
+        $csvdb->update(["header2" => "update", "header3" => "update2"], ["header2" => "test2_1"]);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+    }
+
+    public function testUpdateException(): void
+    {
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $this->expectExceptionMessage("Nothing to update.");
+        $csvdb->update(array());
+    }
+
+    public function testUpsertExceptionMultipleRows()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = $raw;
+        $test1[0]["header2"] = "update";
+        $test1[1]["header2"] = "update";
+        $test1[2]["header2"] = "update";
+
+        $this->expectExceptionMessage("Update/insert only one row.");
+        $csvdb->upsert($test1);
+    }
+
+    public function testUpsertExceptionNoRows(): void
+    {
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $this->expectExceptionMessage("Nothing to update/insert.");
+        $csvdb->upsert(array());
+    }
+
+    public function testUpsertDefault()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = $raw;
+        $test1[0]["header2"] = "update";
+        $test1[1]["header2"] = "update";
+        $test1[2]["header2"] = "update";
+
+        $csvdb->upsert($test1[0], ["header2" => "test2_1"]);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+
     }
 
     // DELETE
