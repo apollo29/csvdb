@@ -7,7 +7,6 @@ class CSVConfig
     public int $index;
     public string $encoding;
     public string $delimiter;
-    public string $enclosure;
     public bool $headers;
 
     const INDEX = 0;
@@ -31,10 +30,5 @@ class CSVConfig
     public static function default(): CSVConfig
     {
         return new CSVConfig();
-    }
-
-    public static function withDelimiter(string $delimiter): CSVConfig
-    {
-        return new CSVConfig(CSVConfig::ENCODING, $delimiter);
     }
 }

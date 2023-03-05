@@ -20,7 +20,8 @@ class CSVDB
      * delete return?
      * insert return?
      * update return?
-     * set index column!
+     * set index column! and check if unique?
+     * custom unique
      * cache
      * history
      */
@@ -79,22 +80,6 @@ class CSVDB
             $reader->setHeaderOffset(0);
         }
         return $reader;
-    }
-
-    private function reset(): void
-    {
-        $this->select = array();
-        $this->where = array();
-        $this->operator = CSVDB::AND;
-        $this->order = array();
-        $this->limit = 0;
-        $this->count = false;
-    }
-
-    private function headers(): array
-    {
-        $reader = $this->reader();
-        return $reader->getHeader();
     }
 
     // CREATE
@@ -389,34 +374,6 @@ class CSVDB
         }
     }
 
-    private function has_headers(array $headers, array $update): bool
-    {
-        $hasHeader = false;
-        $record = $update;
-        if ($this->has_multiple_records($update)) {
-            $key = key($update);
-            $record = $update[$key];
-        }
-        foreach ($headers as $header) {
-            if (array_key_exists($header, $record)) {
-                $hasHeader = true;
-            }
-        }
-        return $hasHeader;
-    }
-
-    private function index(): string
-    {
-        $headers = $this->headers();
-        return $headers[$this->config->index];
-    }
-
-    private function has_multiple_records($data): bool
-    {
-        $key = key($data);
-        return is_array($data[$key]);
-    }
-
     // DELETE
 
     /**
@@ -465,4 +422,49 @@ class CSVDB
         $writer->insertOne($headers);
     }
 
+    // UTIL
+
+    private function reset(): void
+    {
+        $this->select = array();
+        $this->where = array();
+        $this->operator = CSVDB::AND;
+        $this->order = array();
+        $this->limit = 0;
+        $this->count = false;
+    }
+
+    private function headers(): array
+    {
+        $reader = $this->reader();
+        return $reader->getHeader();
+    }
+
+    private function has_headers(array $headers, array $update): bool
+    {
+        $hasHeader = false;
+        $record = $update;
+        if ($this->has_multiple_records($update)) {
+            $key = key($update);
+            $record = $update[$key];
+        }
+        foreach ($headers as $header) {
+            if (array_key_exists($header, $record)) {
+                $hasHeader = true;
+            }
+        }
+        return $hasHeader;
+    }
+
+    private function index(): string
+    {
+        $headers = $this->headers();
+        return $headers[$this->config->index];
+    }
+
+    private function has_multiple_records($data): bool
+    {
+        $key = key($data);
+        return is_array($data[$key]);
+    }
 }
