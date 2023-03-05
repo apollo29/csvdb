@@ -86,6 +86,12 @@ class CSVDB
         $this->limit = 0;
     }
 
+    private function headers(): array
+    {
+        $reader = $this->reader();
+        return $reader->getHeader();
+    }
+
     // CREATE
 
     /**
@@ -275,18 +281,46 @@ class CSVDB
             throw new \Exception('Nothing to update.');
         }
 
-        $records = $this->select()->where($where)->get();
-
-        $this->delete($where);
+        $records = $this->select()->get();
+        $this->delete_all();
 
         $data = array();
         foreach ($records as $record) {
-            $data[] = $this->update_stmt($record, $update);
+            $data[] = $this->update_stmts($record, $update, $where);
         }
 
         if (count($data) > 0) {
             $this->insert($data);
         }
+    }
+
+    private function update_stmts(array $record, array $update, array $where): array
+    {
+        if (count($where) == 0) {
+            return $this->update_stmt($record, $update);
+        } else {
+            $key = key($where);
+            $value = $where[$key];
+            if (is_array($value)) {
+                foreach ($where as $check) {
+                    if ($this->check_update_stmt($record, $check)) {
+                        return $this->update_stmt($record, $update);
+                    }
+                }
+            } else {
+                if ($this->check_update_stmt($record, $where)) {
+                    return $this->update_stmt($record, $update);
+                }
+            }
+            return $record;
+        }
+    }
+
+    private function check_update_stmt(array $record, $where): bool
+    {
+        $key = key($where);
+        $value = $where[$key];
+        return $record[$key] == $value;
     }
 
     private function update_stmt(array $record, array $update): array
@@ -308,21 +342,21 @@ class CSVDB
     public function delete(array $where): void
     {
         if (count($where) == 0) {
-            throw new \Exception('Deleting all entries will empty the your file!');
+            $this->delete_all();
+        } else {
+            $reader = $this->reader();
+            $stmt = Statement::create()->where(function ($row) use ($where) {
+                return $this->where_stmt($row, $this->delete_where_stmt($where));
+            });
+            $records = $stmt->process($reader);
+
+            $headers = $reader->getHeader();
+            $data = $records->jsonSerialize();
+
+            $writer = $this->writer("w+");
+            $writer->insertOne($headers);
+            $writer->insertAll($data);
         }
-
-        $reader = $this->reader();
-        $stmt = Statement::create()->where(function ($row) use ($where) {
-            return $this->where_stmt($row, $this->delete_where_stmt($where));
-        });
-        $records = $stmt->process($reader);
-
-        $headers = $reader->getHeader();
-        $data = $records->jsonSerialize();
-
-        $writer = $this->writer("w+");
-        $writer->insertOne($headers);
-        $writer->insertAll($data);
     }
 
     private function delete_where_stmt(array $where): array
@@ -333,6 +367,18 @@ class CSVDB
             return [$key => $value[0]];
         }
         return [$key => [$value, CSVDB::NEG]];
+    }
+
+    /**
+     * @throws InvalidArgument
+     * @throws CannotInsertRecord
+     * @throws Exception
+     */
+    private function delete_all(): void
+    {
+        $headers = $this->headers();
+        $writer = $this->writer("w+");
+        $writer->insertOne($headers);
     }
 
 }

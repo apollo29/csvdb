@@ -57,7 +57,8 @@
     $test->update(["test3" => "update test"], ["test1" => "john"]);
     */
 
-    $data = $csvdb->select()->where(["header2" => ["test2_1", CSVDB::NEG]])->get();
+    //$csvdb->update(["header2" => "update"], ["header2" => "test2_1"]);
+    $data = $csvdb->select()->get();
     var_dump($data);
 
     ?>
