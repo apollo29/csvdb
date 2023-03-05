@@ -26,7 +26,6 @@ class CSVDB
     public CSVConfig $config;
 
     private array $select = array();
-    private array $update = array();
     private array $where = array();
     private string $operator = CSVDB::AND;
     private array $order = array();
@@ -286,6 +285,8 @@ class CSVDB
         }
         return $record;
     }
+
+    // todo upsert
 
     // DELETE
 
