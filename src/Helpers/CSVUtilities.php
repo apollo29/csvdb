@@ -14,6 +14,15 @@ class CSVUtilities
         return false;
     }
 
+    public static function csv_file($document): ?string
+    {
+        if (is_file($document)) {
+            $path_parts = pathinfo($document);
+            return $path_parts['filename'].".".$path_parts['extension'];
+        }
+        return null;
+    }
+
     public static function csv_dir($document): ?string
     {
         if (is_file($document)) {

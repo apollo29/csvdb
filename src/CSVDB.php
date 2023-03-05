@@ -21,7 +21,9 @@ class CSVDB
      * auto increment
      */
 
+    public string $file;
     public string $document;
+    private string $basedir;
     public CSVConfig $config;
 
     private array $select = array();
@@ -32,9 +34,6 @@ class CSVDB
     private bool $count = false;
 
     private Reader $cache;
-
-    private string $basedir;
-    private string $history;
 
     const ASC = "asc";
     const DESC = "desc";
@@ -47,20 +46,22 @@ class CSVDB
     /**
      * @throws \Exception
      */
-    public function __construct(string $document, CSVConfig $config = null)
+    public function __construct(string $file, CSVConfig $config = null)
     {
-        if (!CSVUtilities::is_csv($document)) {
+        if (!CSVUtilities::is_csv($file)) {
             throw new \Exception('Unable to open CSV file');
         }
 
+        $this->file = $file;
+        $this->basedir = CSVUtilities::csv_dir($file);
+        $this->document = CSVUtilities::csv_file($file);
         $this->config = $config ?: CSVConfig::default();
-        $this->document = $document;
 
         // cache
         $this->setup_cache();
 
         // history
-        $this->setup_history($document);
+        $this->setup_history();
     }
 
     /**
@@ -69,7 +70,7 @@ class CSVDB
      */
     private function writer(string $mode = "a+"): Writer
     {
-        $csv = Writer::createFromPath($this->document, $mode);
+        $csv = Writer::createFromPath($this->file, $mode);
         $csv->setDelimiter($this->config->delimiter);
         return $csv;
     }
@@ -81,7 +82,7 @@ class CSVDB
     private function reader(bool $forced = false): Reader
     {
         if ($forced or isset($this->cache)) {
-            $reader = Reader::createFromPath($this->document);
+            $reader = Reader::createFromPath($this->file);
             $reader->setDelimiter($this->config->delimiter);
             if ($this->config->headers) {
                 $reader->setHeaderOffset(0);
@@ -120,10 +121,6 @@ class CSVDB
 
     private function history_dir(): string
     {
-        if (!isset($this->basedir)) {
-            $this->basedir = CSVUtilities::csv_dir($this->document);
-        }
-
         $dir = $this->basedir . "/history/";
         if (!file_exists($dir)) {
             mkdir($dir);
@@ -136,7 +133,7 @@ class CSVDB
         $dir = $this->history_dir();
         $time = date_format(new \DateTime(), "YmdHisu");
         $filename = $dir . $time . "_" . $this->document;
-        copy($this->document, $filename);
+        copy($this->file, $filename);
     }
 
     // CREATE
