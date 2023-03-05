@@ -44,6 +44,8 @@
 <pre>
     <?php
 
+    var_dump(__DIR__ . "/../tests/assets/test.csv");
+
     /*
     $data = $test
         ->select(["test1", "test test3"])
@@ -60,6 +62,8 @@
 
     ?>
 </pre>
+
+<?= phpinfo() ?>
 
 </body>
 
