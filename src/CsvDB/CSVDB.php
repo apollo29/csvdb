@@ -20,6 +20,9 @@ class CSVDB
      * delete return?
      * insert return?
      * update return?
+     * set index column!
+     * cache
+     * history
      */
 
     public string $document;
@@ -177,8 +180,7 @@ class CSVDB
                 $return = $this->create_where_stmts($return, $row, $where, $this->operator);
             }
             return $return;
-        }
-        else {
+        } else {
             return $this->create_where_stmt($row, $where_array);
         }
     }
@@ -373,6 +375,11 @@ class CSVDB
             throw new \Exception('Update/insert only one row.');
         }
 
+        if (count($where) == 0) {
+            $index = $this->index();
+            $where[$index] = $update[$index];
+        }
+
         $count = $this->select()->count()->where($where)->get();
 
         if ($count["count"] > 0) {
@@ -396,6 +403,12 @@ class CSVDB
             }
         }
         return $hasHeader;
+    }
+
+    private function index(): string
+    {
+        $headers = $this->headers();
+        return $headers[$this->config->index];
     }
 
     private function has_multiple_records($data): bool

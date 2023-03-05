@@ -4,12 +4,13 @@ namespace CSVDB\Helpers;
 
 class CSVConfig
 {
-
+    public int $index;
     public string $encoding;
     public string $delimiter;
     public string $enclosure;
     public bool $headers;
 
+    const INDEX = 0;
     const ENCODING = "UTF-8";
     const DELIMITER = ",";
     const HEADERS = true;
@@ -18,8 +19,9 @@ class CSVConfig
      * @param string $encoding
      * @param string $delimiter
      */
-    public function __construct(string $encoding = CSVConfig::ENCODING, string $delimiter = CSVConfig::DELIMITER, $headers = CSVConfig::HEADERS)
+    public function __construct(int $index = CSVConfig::INDEX, string $encoding = CSVConfig::ENCODING, string $delimiter = CSVConfig::DELIMITER, $headers = CSVConfig::HEADERS)
     {
+        $this->index = $index;
         $this->encoding = $encoding;
         $this->delimiter = $delimiter;
         $this->headers = $headers;

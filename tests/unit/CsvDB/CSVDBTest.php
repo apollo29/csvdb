@@ -355,7 +355,7 @@ class CSVDBTest extends TestCase
         $csvdb->upsert(array());
     }
 
-    public function testUpsertDefault()
+    public function testUpsertUpdate()
     {
         $raw = $this->prepareDefaultData();
         $file = vfsStream::url("assets/" . $this->filename);
@@ -365,6 +365,20 @@ class CSVDBTest extends TestCase
         $test1[0]["header2"] = "update";
 
         $csvdb->upsert($test1[0], ["header1" => "row1"]);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+    }
+
+    public function testUpsertInsert()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $record1 = array('header1' => 'record1', 'header2' => 'record1_1', 'header3' => 'value0');
+        $test1 = $raw;
+        $test1[5] = $record1;
+        $csvdb->upsert($record1);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
     }
