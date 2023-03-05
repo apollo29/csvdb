@@ -292,7 +292,7 @@ class CSVDB
 
         // count
         if ($this->count) {
-            return array("count" => count($data));
+            $data = array("count" => count($data));
         }
 
         // reset
@@ -369,11 +369,12 @@ class CSVDB
     {
         if (count($update) == 0) {
             throw new \Exception('Nothing to update/insert.');
-        } elseif (is_array($update[0])) {
+        } elseif ($this->has_multiple_records($update)) {
             throw new \Exception('Update/insert only one row.');
         }
 
         $count = $this->select()->count()->where($where)->get();
+
         if ($count["count"] > 0) {
             $this->update($update, $where);
         } else {

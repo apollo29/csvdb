@@ -213,7 +213,7 @@ class CSVDBTest extends TestCase
         $test1[] = $raw[0];
         $test1[] = $raw[1];
         $test1[] = $raw[2];
-        $data1 = $csvdb->select()->where([["header2" => "test2_1"],["header3" => "value5"]], CSVDB::OR)->get();
+        $data1 = $csvdb->select()->where([["header2" => "test2_1"], ["header3" => "value5"]], CSVDB::OR)->get();
         $this->assertEquals($test1, $data1);
     }
 
@@ -363,13 +363,10 @@ class CSVDBTest extends TestCase
 
         $test1 = $raw;
         $test1[0]["header2"] = "update";
-        $test1[1]["header2"] = "update";
-        $test1[2]["header2"] = "update";
 
-        $csvdb->upsert($test1[0], ["header2" => "test2_1"]);
+        $csvdb->upsert($test1[0], ["header1" => "row1"]);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
-
     }
 
     // DELETE

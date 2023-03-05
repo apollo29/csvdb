@@ -84,7 +84,7 @@
 
     //var_dump($test1[0]);
 
-    $csvdb->upsert($test1[0], [["header2" => "test2_1"], ["header3" => "value5"]]);
+    $csvdb->upsert($test1[0], ["header2" => "test2_1"]);
     //$csvdb->insert($test1[0]);
     $data = $csvdb->select()->get();
     //$data = $csvdb->select()->where(["header2" => "test2_1","header3" => "value5"], CSVDB::OR)->get();
