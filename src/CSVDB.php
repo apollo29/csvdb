@@ -106,16 +106,17 @@ class CSVDB
 
     public function setup_history(): void
     {
-        $dir = $this->history_dir();
-        $files = scandir($dir, SCANDIR_SORT_DESCENDING);
-        if (is_file($files[0])) {
-            $latest = $files[0];
-            var_dump($latest);
-            if (md5_file($this->document) !== md5_file($dir . $latest)) {
+        if ($this->config->history) {
+            $dir = $this->history_dir();
+            $files = scandir($dir, SCANDIR_SORT_DESCENDING);
+            if (is_file($dir . $files[0])) {
+                $latest = $files[0];
+                if (md5_file($this->file) !== md5_file($dir . $latest)) {
+                    $this->history();
+                }
+            } else {
                 $this->history();
             }
-        } else {
-            $this->history();
         }
     }
 

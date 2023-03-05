@@ -75,7 +75,8 @@ class CSVDBTest extends TestCase
         $file = vfsStream::url("assets/" . $this->filename);
 
         $csvdb = new CSVDB($file);
-        $this->assertEquals($file, $csvdb->document);
+        $this->assertEquals($file, $csvdb->file);
+        //todo document, basedir etc...
         $this->assertEquals(CSVConfig::default(), $csvdb->config);
     }
 

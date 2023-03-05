@@ -83,17 +83,18 @@
     $test1[2]["header2"] = "update2";
 
     //var_dump($test1[0]);
+    /*
+        $csvdb->insert($test1[2]);
+        $data = $csvdb->select()->get();
+        var_dump($data);
+        $data = $csvdb->select()->orderBy(["header3" => CSVDB::ASC])->get();
+        var_dump($data);
+        $csvdb->upsert($test1[1]);
+        $csvdb->delete(["header1"=>"row1"]);
 
-    $csvdb->insert($test1[2]);
-    $data = $csvdb->select()->get();
-    var_dump($data);
-    $data = $csvdb->select()->orderBy(["header3" => CSVDB::ASC])->get();
-    var_dump($data);
-    $csvdb->upsert($test1[1]);
-    $csvdb->delete(["header1"=>"row1"]);
-
-    $data = $csvdb->select()->where(["header1" => "row3"])->get();
-    var_dump($data);
+        $data = $csvdb->select()->where(["header1" => "row3"])->get();
+        var_dump($data);
+    */
     ?>
 </pre>
 
