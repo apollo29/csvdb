@@ -6,6 +6,10 @@ namespace CSVDB\Helpers;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @covers \CSVDB\Helpers\CSVUtilities
+ * @uses \CSVDB\Helpers\CSVUtilities
+ */
 class CSVUtilitiesTest extends TestCase
 {
     protected string $filename = "test.csv";

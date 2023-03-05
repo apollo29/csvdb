@@ -5,6 +5,10 @@ namespace CSVDB\Helpers;
 
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @covers \CSVDB\Helpers\CSVConfig
+ * @uses   \CSVDB\Helpers\CSVConfig
+ */
 class CSVConfigTest extends TestCase
 {
 
@@ -19,7 +23,7 @@ class CSVConfigTest extends TestCase
 
     public function testConfigCustom()
     {
-        $config = new CSVConfig(1,"UTF-16", ";",false);
+        $config = new CSVConfig(1, "UTF-16", ";", false);
         $this->assertEquals($config->index, 1);
         $this->assertEquals($config->encoding, "UTF-16");
         $this->assertEquals($config->delimiter, ";");

@@ -7,6 +7,10 @@ use CSVDB\Helpers\CSVConfig;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @covers \CSVDB\CSVDB
+ * @uses \CSVDB\CSVDB
+ */
 class CSVDBTest extends TestCase
 {
 
@@ -147,10 +151,10 @@ class CSVDBTest extends TestCase
         $test1[] = $raw[0];
 
         $data1 = $csvdb->select()->orderBy("header3")->get();
-        $this->assertEquals($raw, $data1);
+        $this->assertEquals($test1, $data1);
 
         $data2 = $csvdb->select()->orderBy(["header3"])->get();
-        $this->assertEquals($raw, $data2);
+        $this->assertEquals($test1, $data2);
 
         $data3 = $csvdb->select()->orderBy(["header3" => CSVDB::ASC])->get();
         $this->assertEquals($test1, $data3);
@@ -255,7 +259,7 @@ class CSVDBTest extends TestCase
         $data2 = $csvdb->select()->count()->where(["header2" => "test2_1"])->limit(1)->get();
         $this->assertEquals(["count" => 1], $data2);
 
-        $data3 = $csvdb->select()->where([["header2" => "test2_1"], ["header3" => "value5"]])->get();
+        $data3 = $csvdb->select()->count()->where([["header2" => "test2_1"], ["header3" => "value5"]])->get();
         $this->assertEquals(["count" => 1], $data3);
     }
 

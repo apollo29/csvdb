@@ -203,7 +203,12 @@ class CSVDB
             if ($this->has_multiple_records($orderVal)) {
                 $order = [$orderVal[$key] => self::ASC];
             } else {
-                $order = $orderVal;
+                $key = key($orderVal);
+                if (isset($orderVal[0])) {
+                    $order = [$orderVal[0] => self::ASC];
+                } else {
+                    $order = [$key => $orderVal[$key]];
+                }
             }
         } else {
             $order = [$orderVal => self::ASC];
