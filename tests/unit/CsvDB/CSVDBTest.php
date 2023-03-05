@@ -5,16 +5,10 @@ namespace CSVDB;
 
 use CSVDB\Helpers\CSVConfig;
 use org\bovigo\vfs\vfsStream;
-use org\bovigo\vfs\vfsStreamDirectory;
 use PHPUnit\Framework\TestCase;
 
 class CSVDBTest extends TestCase
 {
-
-    /**
-     * @var  vfsStreamDirectory
-     */
-    private $root;
 
     protected string $filename = "test.csv";
     protected array $header = array('header1', 'header2', 'header3');
@@ -28,7 +22,7 @@ class CSVDBTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->root = vfsStream::setup("assets/");
+        vfsStream::setup("assets/");
 
         $fp = fopen(vfsStream::url("assets/" . $this->filename), 'w');
         fputcsv($fp, $this->header);
