@@ -18,6 +18,7 @@ class CSVDB
      * todo
      * index column: check if unique?
      * custom unique?
+     * auto increment
      */
 
     public string $document;
