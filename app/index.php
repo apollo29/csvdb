@@ -23,7 +23,7 @@
 
     require '../vendor/autoload.php';
 
-    $test = new CSVDB("test.csv");
+    $csvdb = new CSVDB("phpunit.csv");
 
     $records = [
         [1, 2, 3],
@@ -43,9 +43,6 @@
 <h1>csvdb</h1>
 <pre>
     <?php
-
-    var_dump(__DIR__ . "/../tests/assets/test.csv");
-
     /*
     $data = $test
         ->select(["test1", "test test3"])
@@ -56,14 +53,15 @@
     var_dump($data);
 
     //$test->delete(["test1" => "john"]);
-    */
 
     $test->update(["test3" => "update test"], ["test1" => "john"]);
+    */
+
+    $data = $csvdb->select()->where(["header2" => ["test2_1", CSVDB::NEG]])->get();
+    var_dump($data);
 
     ?>
 </pre>
-
-<?= phpinfo() ?>
 
 </body>
 

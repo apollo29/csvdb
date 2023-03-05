@@ -85,32 +85,50 @@ class CSVDBTest extends TestCase
         $file = vfsStream::url("assets/" . $this->filename);
         $csvdb = new CSVDB($file);
 
-        $test1 = $raw[0];
+        $test1 = array();
+        $test1[] = $raw[0];
         $data1 = $csvdb->select()->limit(1)->get();
         $this->assertEquals($test1, $data1);
 
         $test2 = array();
-        $test2[]=$raw[0];
-        $test2[]=$raw[1];
-        $test2[]=$raw[2];
+        $test2[] = $raw[0];
+        $test2[] = $raw[1];
+        $test2[] = $raw[2];
         $data2 = $csvdb->select()->limit(3)->get();
         $this->assertEquals($test2, $data2);
     }
 
-    public function testSelectDefaultOrder()
+    public function testSelectDefaultOrderASC()
     {
         $raw = $this->prepareDefaultData();
         $file = vfsStream::url("assets/" . $this->filename);
         $csvdb = new CSVDB($file);
 
         $test1 = array();
-        $test1[]=$raw[4];
-        $test1[]=$raw[3];
-        $test1[]=$raw[2];
-        $test1[]=$raw[1];
-        $test1[]=$raw[0];
+        $test1[] = $raw[4];
+        $test1[] = $raw[3];
+        $test1[] = $raw[2];
+        $test1[] = $raw[1];
+        $test1[] = $raw[0];
         $data1 = $csvdb->select()->orderBy("header3")->get();
         $this->assertEquals($test1, $data1);
+
+        $data2 = $csvdb->select()->orderBy(["header3"])->get();
+        $this->assertEquals($test1, $data2);
+
+
+        $data3 = $csvdb->select()->orderBy(["header3" => CSVDB::ASC])->get();
+        $this->assertEquals($test1, $data3);
+    }
+
+    public function testSelectDefaultOrderDESC()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $data1 = $csvdb->select()->orderBy(["header3" => CSVDB::DESC])->get();
+        $this->assertEquals($raw, $data1);
     }
 
     public function testSelectDefaultWhere()
@@ -120,15 +138,48 @@ class CSVDBTest extends TestCase
         $csvdb = new CSVDB($file);
 
         $test1 = array();
-        $test1[]=$raw[0];
-        $test1[]=$raw[1];
-        $test1[]=$raw[2];
-        $data1 = $csvdb->select()->where(["header2"=>"test2_1"])->get();
+        $test1[] = $raw[0];
+        $test1[] = $raw[1];
+        $test1[] = $raw[2];
+        $data1 = $csvdb->select()->where(["header2" => "test2_1"])->get();
         $this->assertEquals($test1, $data1);
 
         $test2 = array();
-        $test2[]=$raw[3];
-        $data2 = $csvdb->select()->where(["header2"=>"test2_2"])->get();
+        $test2[] = $raw[3];
+        $data2 = $csvdb->select()->where(["header2" => "test2_2"])->get();
         $this->assertEquals($test2, $data2);
+
+        $test3 = array();
+        $test3[] = $raw[3];
+        $test3[] = $raw[4];
+        $data3 = $csvdb->select()->where(["header2" => ["test2_1", CSVDB::NEG]])->get();
+        $this->assertEquals($test3, $data3);
+    }
+
+    public function testSelectDefaultWhereOrder()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = array();
+        $test1[] = $raw[2];
+        $test1[] = $raw[1];
+        $test1[] = $raw[0];
+        $data1 = $csvdb->select()->where(["header2" => "test2_1"])->orderBy("header3")->get();
+        $this->assertEquals($test1, $data1);
+    }
+
+    public function testSelectDefaultWhereOrderLimit()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = array();
+        $test1[] = $raw[2];
+        $test1[] = $raw[1];
+        $data1 = $csvdb->select()->where(["header2" => "test2_1"])->orderBy("header3")->limit(2)->get();
+        $this->assertEquals($test1, $data1);
     }
 }

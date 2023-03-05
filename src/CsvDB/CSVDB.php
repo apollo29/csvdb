@@ -183,8 +183,19 @@ class CSVDB
         return strpos($row[$key], $value) !== false;
     }
 
-    public function orderBy(array $order = array()): CSVDB
+    public function orderBy($orderVal = array()): CSVDB
     {
+        if (is_array($orderVal)) {
+            $key = key($orderVal);
+            if (is_numeric($key)) {
+                $order = [$orderVal[$key] => self::ASC];
+            } else {
+                $order = $orderVal;
+            }
+        } else {
+            $order = [$orderVal => self::ASC];
+        }
+
         $this->order = $order;
         return $this;
     }
