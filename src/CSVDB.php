@@ -517,7 +517,7 @@ class CSVDB
         $this->count = false;
     }
 
-    private function headers(): array
+    public function headers(): array
     {
         $reader = $this->reader();
         return $reader->getHeader();
