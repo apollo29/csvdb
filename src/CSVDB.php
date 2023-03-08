@@ -23,7 +23,7 @@ class CSVDB
 
     public string $file;
     public string $document;
-    private string $basedir;
+    public string $basedir;
     public CSVConfig $config;
 
     private array $select = array();
@@ -120,7 +120,7 @@ class CSVDB
         }
     }
 
-    private function history_dir(): string
+    public function history_dir(): string
     {
         $dir = $this->basedir . "/history/";
         if (!file_exists($dir)) {
@@ -321,7 +321,7 @@ class CSVDB
      * @throws InvalidArgument
      * @throws Exception
      */
-    public function get(): array
+    public function get(Converter $converter = null): array
     {
         $reader = $this->reader();
         $stmt = Statement::create();
@@ -351,6 +351,11 @@ class CSVDB
             // count
             $data = array("count" => $records->count());
         } else {
+            // converter
+            if (isset($converter)) {
+                $records = $converter->convert($records);
+            }
+
             // select
             $data = $this->select_stmt($records);
         }
