@@ -413,4 +413,8 @@ class CSVDBTest extends TestCase
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
     }
+
+    // CONVERTER
+
+    //todo
 }

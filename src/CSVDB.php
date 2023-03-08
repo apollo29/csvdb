@@ -351,13 +351,13 @@ class CSVDB
             // count
             $data = array("count" => $records->count());
         } else {
-            // converter
-            if (isset($converter)) {
-                $records = $converter->convert($records);
-            }
-
             // select
             $data = $this->select_stmt($records);
+        }
+
+        // converter
+        if (isset($converter)) {
+            $data = $converter->convert($data);
         }
 
         // reset
