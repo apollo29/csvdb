@@ -25,6 +25,7 @@ class CSVDB
     public string $document;
     public string $basedir;
     public CSVConfig $config;
+    public string $index;
 
     private array $select = array();
     private array $where = array();
@@ -62,6 +63,9 @@ class CSVDB
 
         // history
         $this->setup_history();
+
+        // setup index
+        $this->index = $this->setup_index();
     }
 
     /**
@@ -81,7 +85,7 @@ class CSVDB
      */
     private function reader(bool $forced = false): Reader
     {
-        if ($forced or isset($this->cache)) {
+        if ($forced or !isset($this->cache)) {
             $reader = Reader::createFromPath($this->file);
             $reader->setDelimiter($this->config->delimiter);
             if ($this->config->headers) {
@@ -135,6 +139,11 @@ class CSVDB
         $time = date_format(new \DateTime(), "YmdHisu");
         $filename = $dir . $time . "_" . $this->document;
         copy($this->file, $filename);
+    }
+
+    private function setup_index(): string
+    {
+        return $this->headers()[$this->config->index];
     }
 
     // CREATE
