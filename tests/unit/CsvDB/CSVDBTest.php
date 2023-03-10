@@ -336,6 +336,15 @@ class CSVDBTest extends TestCase
         $csvdb->update(array());
     }
 
+    public function testUpdateExceptionArray()
+    {
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $this->expectExceptionMessage("Update is not an associative array.");
+        $csvdb->update(["test_exception", "test", "test"]);
+    }
+
     public function testUpsertExceptionMultipleRows()
     {
         $raw = $this->prepareDefaultData();
