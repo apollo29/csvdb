@@ -385,6 +385,9 @@ class CSVDB
         if (count($update) == 0) {
             throw new \Exception('Nothing to update.');
         }
+        if (isset($update[0])) {
+            throw new \Exception('Update is not an associative array.');
+        }
 
         $records = $this->select()->get();
         $this->delete_all();
