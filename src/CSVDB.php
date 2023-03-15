@@ -394,6 +394,7 @@ class CSVDB
 
         $data = array();
         foreach ($records as $record) {
+            // todo improve with array_diff_assoc
             $data[] = $this->update_stmts($record, $update, $where);
         }
 
@@ -477,7 +478,7 @@ class CSVDB
         } else {
             $reader = $this->reader();
             $stmt = Statement::create()->where(function ($row) use ($where) {
-                return $this->where_stmt($row, $this->delete_where_stmt($where));
+                return $this->delete_where_stmts($row, $where);
             });
             $records = $stmt->process($reader);
 
@@ -500,14 +501,39 @@ class CSVDB
         }
     }
 
-    private function delete_where_stmt(array $where): array
+    /**
+     * Where Statement for delete;
+     * The mechanism works the other way around. We look for all records, not fulfill the where clause and then store
+     * these records without the "deleted" ones.
+     *
+     * @param array $record
+     * @param array $where
+     * @return bool
+     */
+    private function delete_where_stmts(array $record, array $where): bool
     {
+        if ($this->has_multiple_records($where)) {
+            $complies = false;
+            foreach ($where as $check) {
+                if ($this->delete_where_stmt($record, $check)) {
+                    $complies = true;
+                }
+            }
+            return $complies;
+        } else {
+            return $this->delete_where_stmt($record, $where);
+        }
+    }
+
+    private function delete_where_stmt(array $record, array $where): bool
+    {
+        $complies = false;
         $key = key($where);
         $value = $where[$key];
-        if (is_array($value)) {
-            return [$key => $value[0]];
+        if (array_key_exists($key, $record)) {
+            $complies = ($record[$key] != $value);
         }
-        return [$key => [$value, CSVDB::NEG]];
+        return $complies;
     }
 
     /**
