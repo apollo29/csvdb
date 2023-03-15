@@ -19,6 +19,7 @@ class CSVDB
      * index column: check if unique?
      * custom unique?
      * auto increment
+     * check empty where stmts
      */
 
     public string $file;
@@ -409,10 +410,15 @@ class CSVDB
             return $this->update_stmt($record, $update);
         } else {
             if ($this->has_multiple_records($where)) {
+                $complies = true;
                 foreach ($where as $check) {
-                    if ($this->check_update_stmt($record, $check)) {
-                        return $this->update_stmt($record, $update);
+                    if (!$this->check_update_stmt($record, $check)) {
+                        $complies = false;
                     }
+                }
+
+                if ($complies) {
+                    return $this->update_stmt($record, $update);
                 }
             } else {
                 if ($this->check_update_stmt($record, $where)) {
