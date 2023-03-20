@@ -12,7 +12,7 @@ use League\Csv\Statement;
 use League\Csv\TabularDataReader;
 use League\Csv\Writer;
 
-class CSVDB
+class CSVDB implements Builder\Statement
 {
     /*
      * todo
@@ -20,6 +20,7 @@ class CSVDB
      * custom unique?
      * auto increment
      * check empty where stmts
+     * Select Builder
      */
 
     public string $file;
@@ -191,7 +192,7 @@ class CSVDB
 
     // READ
 
-    public function select(array $select = array()): CSVDB
+    public function select(array $select = array()): Builder\Statement
     {
         $this->select = $select;
         return $this;
@@ -221,8 +222,14 @@ class CSVDB
             return $valid;
         }, ARRAY_FILTER_USE_KEY);
     }
+    
+    public function count(): Builder\Statement
+    {
+        $this->count = true;
+        return $this;
+    }
 
-    public function where(array $where = array(), string $operator = CSVDB::AND): CSVDB
+    public function where(array $where = array(), string $operator = CSVDB::AND): Builder\Statement
     {
         $this->where = $where;
         $this->operator = $operator;
@@ -271,7 +278,7 @@ class CSVDB
         return strpos($row[$key], $value) !== false;
     }
 
-    public function orderBy($orderVal = array()): CSVDB
+    public function orderBy($orderVal = array()): Builder\Statement
     {
         if (is_array($orderVal)) {
             $key = key($orderVal);
@@ -315,15 +322,9 @@ class CSVDB
         return strcmp($row1[$key], $row2[$key]);
     }
 
-    public function limit(int $limit = 0): CSVDB
+    public function limit(int $limit = 0): Builder\Statement
     {
         $this->limit = $limit;
-        return $this;
-    }
-
-    public function count(): CSVDB
-    {
-        $this->count = true;
         return $this;
     }
 
