@@ -18,7 +18,7 @@ class CSVUtilities
     {
         if (is_file($document)) {
             $path_parts = pathinfo($document);
-            return $path_parts['filename'].".".$path_parts['extension'];
+            return realpath($path_parts['filename'].".".$path_parts['extension']);
         }
         return null;
     }
@@ -27,7 +27,7 @@ class CSVUtilities
     {
         if (is_file($document)) {
             $path_parts = pathinfo($document);
-            return $path_parts['dirname'];
+            return realpath($path_parts['dirname']);
         }
         return null;
     }
