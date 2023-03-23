@@ -21,16 +21,18 @@ class CSVConfigTest extends TestCase
         $this->assertEquals($config->headers, CSVConfig::HEADERS);
         $this->assertEquals($config->cache, CSVConfig::CACHE);
         $this->assertEquals($config->history, CSVConfig::HISTORY);
+        $this->assertEquals($config->autoincrement, CSVConfig::AUTOINCREMENT);
     }
 
     public function testConfigCustom()
     {
-        $config = new CSVConfig(1, "UTF-16", ";", false, false, false);
+        $config = new CSVConfig(1, "UTF-16", ";", false, false, false, true);
         $this->assertEquals($config->index, 1);
         $this->assertEquals($config->encoding, "UTF-16");
         $this->assertEquals($config->delimiter, ";");
         $this->assertEquals($config->headers, false);
         $this->assertEquals($config->cache, false);
         $this->assertEquals($config->history, false);
+        $this->assertEquals($config->autoincrement, true);
     }
 }

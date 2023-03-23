@@ -24,6 +24,14 @@ class CSVDBTest extends TestCase
         array('row5', 'test2_3', 'value1')
     );
 
+    protected string $filename_auto = "autoincrement.csv";
+    protected array $header_auto = array('index', 'header1');
+    protected array $data_auto = [
+        ['index' => 1, 'header1' => 'value3'],
+        ['index' => 2, 'header1' => 'value2'],
+        ['index' => 3, 'header1' => 'value1']
+    ];
+
     protected function setUp(): void
     {
         vfsStream::setup("assets/");
@@ -32,6 +40,13 @@ class CSVDBTest extends TestCase
         fputcsv($fp, $this->header);
         foreach ($this->data as $fields) {
             fputcsv($fp, $fields);
+        }
+        fclose($fp);
+
+        $fp = fopen(vfsStream::url("assets/" . $this->filename_auto), 'w');
+        fputcsv($fp, $this->header_auto);
+        foreach ($this->data_auto as $fields) {
+            fputcsv($fp, array_values($fields));
         }
         fclose($fp);
     }
@@ -117,6 +132,22 @@ class CSVDBTest extends TestCase
 
         $data1 = $csvdb->select()->get();
         $this->assertEquals($raw, $data1);
+    }
+
+    public function testSelectDefaultField()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = array();
+        $test1[] = ['header1' => $raw[0]['header1']];
+        $test1[] = ['header1' => $raw[1]['header1']];
+        $test1[] = ['header1' => $raw[2]['header1']];
+        $test1[] = ['header1' => $raw[3]['header1']];
+        $test1[] = ['header1' => $raw[4]['header1']];
+        $data1 = $csvdb->select(["header1"])->get();
+        $this->assertEquals($test1, $data1);
     }
 
     public function testSelectDefaultLimit()
@@ -434,10 +465,39 @@ class CSVDBTest extends TestCase
         $test1[] = $raw[2];
         $test1[] = $raw[3];
         $test1[] = $raw[4];
-        $csvdb->delete([["header2" => "test2_1"],["header3" => "value5"]]);
+        $csvdb->delete([["header2" => "test2_1"], ["header3" => "value5"]]);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
     }
+
+    // AUTOINCREMENT
+
+    public function testAutoincrementDefault()
+    {
+        $raw = $this->data_auto;
+        $file = vfsStream::url("assets/" . $this->filename_auto);
+        $csvdb = new CSVDB($file, new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, CSVConfig::HISTORY, true));
+
+        $record1 = ['header1' => 'value10'];
+        $test1 = $raw;
+        $test1[] = ['index' => 4, 'header1' => 'value10'];
+        $csvdb->insert($record1);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+
+        $record2 = ['index' => 10, 'header1' => 'value11'];
+        $test1[] = $record2;
+        $csvdb->insert($record2);
+        $data2 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data2);
+
+        $record3 = ['header1' => 'value12'];
+        $test1[] = ['index' => 11, 'header1' => 'value12'];
+        $csvdb->insert($record3);
+        $data3 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data3);
+    }
+
 
     // CONVERTER
 
