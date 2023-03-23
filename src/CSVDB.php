@@ -4,6 +4,7 @@ namespace CSVDB;
 
 use CSVDB\Helpers\CSVConfig;
 use CSVDB\Helpers\CSVUtilities;
+use DateTime;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
@@ -92,6 +93,10 @@ class CSVDB implements Builder\Statement
         return $this->cache;
     }
 
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
     private function setup_cache(): void
     {
         if ($this->config->cache) {
@@ -99,6 +104,10 @@ class CSVDB implements Builder\Statement
         }
     }
 
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
     private function cache(): void
     {
         $this->cache = $this->reader(true);
@@ -132,11 +141,15 @@ class CSVDB implements Builder\Statement
     private function history(): void
     {
         $dir = $this->history_dir();
-        $time = date_format(new \DateTime(), "YmdHisu");
+        $time = date_format(new DateTime(), "YmdHisu");
         $filename = $dir . $time . "_" . $this->document;
         copy($this->file, $filename);
     }
 
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
     private function setup_index(): string
     {
         return $this->headers()[$this->config->index];
@@ -165,6 +178,9 @@ class CSVDB implements Builder\Statement
         return true;
     }
 
+    /**
+     * @throws CannotInsertRecord
+     */
     private function check_unique_constraints_record(array $record, array $constraints): bool
     {
         if (isset($record[0])) {
@@ -248,11 +264,19 @@ class CSVDB implements Builder\Statement
         return $where;
     }
 
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
     public function unique_index(): void
     {
         $this->unique($this->index);
     }
 
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
     public function unique(string ...$constraint): void
     {
         $headers = $this->headers();
@@ -266,7 +290,8 @@ class CSVDB implements Builder\Statement
     // CREATE
 
     /**
-     * @throws CannotInsertRecord
+     * @param array $data
+     * @throws CannotInsertRecord|Exception|InvalidArgument|UnableToProcessCsv
      */
     public function insert(array $data): void
     {
@@ -297,16 +322,12 @@ class CSVDB implements Builder\Statement
     }
 
     /**
-     * @throws \Exception
+     * @throws \Exception|UnableToProcessCsv
      */
     private function insert_prepare_stmt(array $data): array
     {
         if ($this->config->autoincrement && count($this->headers()) == count($data)) {
-            if (isset($data[$this->config->index])) {
-                $index = $data[$this->config->index];
-            } else {
-                $index = $data[$this->index];
-            }
+            $index = $data[$this->config->index] ?? $data[$this->index];
             if (!is_numeric($index)) {
                 throw new \Exception("Error on Insert Statement. Autoincrement is activated but Index Field is filled and not numeric: '$index'");
             }
@@ -345,6 +366,7 @@ class CSVDB implements Builder\Statement
      * @throws UnableToProcessCsv
      * @throws InvalidArgument
      * @throws Exception
+     * @throws \Exception
      */
     private function autoincrement_value(): int
     {
@@ -384,11 +406,10 @@ class CSVDB implements Builder\Statement
         return $this;
     }
 
-    private function where_stmt(array $row, array $where_array = array()): bool
+    private function where_stmt(array $row): bool
     {
-        if (count($where_array) == 0) {
-            $where_array = $this->where;
-        }
+        $where_array = $this->where;
+
         if (count($where_array) > 1) {
             $return = null;
             foreach ($where_array as $where) {
@@ -400,7 +421,7 @@ class CSVDB implements Builder\Statement
         }
     }
 
-    private function create_where_stmts(?bool $return, array $row, array $where, string $operator)
+    private function create_where_stmts(?bool $return, array $row, array $where, string $operator): bool
     {
         if (is_bool($return)) {
             if ($operator == CSVDB::AND) {
@@ -525,7 +546,9 @@ class CSVDB implements Builder\Statement
         // converter
         if (isset($converter)) {
             $data = $converter->convert($records);
-        } elseif (!$this->count) {
+        }
+
+        if (!isset($data)) {
             $data = $records->jsonSerialize();
         }
 
@@ -538,7 +561,8 @@ class CSVDB implements Builder\Statement
 
     /**
      * @throws InvalidArgument
-     * @throws Exception
+     * @throws Exception|UnableToProcessCsv
+     * @throws \Exception
      */
     public function update(array $update = array(), array $where = array()): void
     {
@@ -611,7 +635,8 @@ class CSVDB implements Builder\Statement
     /**
      * @throws InvalidArgument
      * @throws CannotInsertRecord
-     * @throws Exception
+     * @throws Exception|UnableToProcessCsv
+     * @throws \Exception
      */
     public function upsert(array $update, array $where = array()): void
     {
@@ -737,6 +762,10 @@ class CSVDB implements Builder\Statement
         $this->count = false;
     }
 
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
     public function headers(): array
     {
         $reader = $this->reader();
@@ -759,6 +788,10 @@ class CSVDB implements Builder\Statement
         return $hasHeader;
     }
 
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
     private function index(): string
     {
         $headers = $this->headers();
