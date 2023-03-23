@@ -227,6 +227,42 @@ class CSVDBTest extends TestCase
         $this->assertEquals($test3, $data3);
     }
 
+    public function testSelectDefaultWhereEmpty()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $record1 = ['header1'=>'row6', 'header2'=>'', 'header3'=>'value10'];
+        $csvdb->insert($record1);
+        $test1 = array();
+        $test1[] = $raw[0];
+        $test1[] = $raw[1];
+        $test1[] = $raw[2];
+        $test1[] = $raw[3];
+        $test1[] = $raw[4];
+        $test1[] = $record1;
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+
+        $test2 = array();
+        $test2[] = $record1;
+        $data2 = $csvdb->select()->where(["header2"=>""])->get();
+        $this->assertEquals($test2, $data2);
+
+        $data3 = $csvdb->select()->where(["header2"=>CSVDB::EMPTY])->get();
+        $this->assertEquals($test2, $data3);
+
+        $test4 = array();
+        $test4[] = $raw[0];
+        $test4[] = $raw[1];
+        $test4[] = $raw[2];
+        $test4[] = $raw[3];
+        $test4[] = $raw[4];
+        $data4 = $csvdb->select()->where(["header2"=>[CSVDB::EMPTY,CSVDB::NEG]])->get();
+        $this->assertEquals($test4, $data4);
+    }
+
     public function testSelectCustomWhere()
     {
         $raw = $this->prepareDefaultData();
