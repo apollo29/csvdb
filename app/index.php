@@ -99,11 +99,15 @@
 row1,test2_1,value5
     */
 
+    $csvdb->unique("header3", "header1");
+    $csvdb->unique_index();
 
-    $test = ["header1" => "test", "header2" => "test", "header3" => ""];
+    $test = ["header1" => "row6", "header2" => "test2", "header3" => "value6"];
     //$csvdb->insert($test);
-    $data = $csvdb->select()->where(["header3"=>[CSVDB::EMPTY,CSVDB::NEG]])->get();
-    //$data = $csvdb->select()->count()->where(["header1" => "row1"])->get();
+    $csvdb->upsert($test,["index"=>7]);
+    //$csvdb->update($test,["header2"=>"test2_1"]);
+    $data = $csvdb->select()->get(); //[["header1" => "row1"],["header3" => "value1"]]
+    //$data = $csvdb->select()->where(["header1" => "row1"],CSVDB::OR)->get();
     var_dump($data);
     ?>
 </pre>

@@ -35,6 +35,8 @@ class CSVDB implements Builder\Statement
 
     private Reader $cache;
 
+    private array $constraints = array();
+
     const ASC = "asc";
     const DESC = "desc";
 
@@ -146,6 +148,124 @@ class CSVDB implements Builder\Statement
         return $this->headers()[$this->config->index];
     }
 
+    // CONSTRAINTS
+
+    private function check_unique_constraints(array $data): bool
+    {
+        if (count($this->constraints) > 0) {
+            $constraints = array_values($this->constraints);
+            if ($this->has_multiple_records($data)) {
+                $check = true;
+                foreach ($data as $record) {
+                    if (!$this->check_unique_constraints_record($record, $constraints)) {
+                        $check = false;
+                    }
+                }
+                return $check;
+            }
+            return $this->check_unique_constraints_record($data, $constraints);
+        }
+        return true;
+    }
+
+    private function check_unique_constraints_record(array $record, array $constraints): bool
+    {
+        if (isset($record[0])) {
+            throw new CannotInsertRecord("Your data is not an associative array and there are unique constraints.");
+        }
+
+        if ($this->check_unique_constraints_missing($record, $constraints)) {
+            $where = $this->prepare_unique_stmt($record, $constraints);
+            $count = $this->select()->count()->where($where, CSVDB::OR)->get();
+            return $count['count'] == 0;
+        }
+        return false;
+    }
+
+    private function check_unique_constraints_update(array $data, array $where): bool
+    {
+        if (count($this->constraints) > 0) {
+            $constraints = array_values($this->constraints);
+            // if no constraints available, all good
+            if ($this->check_unique_constraints_available($data, $constraints)) {
+                // constraints are available
+                // if no where stmt available, not good
+                if (count($where) > 0) {
+                    // check for other records with constraints present, if there are none, all good
+                    $unique_where = $this->prepare_unique_stmt($data, $constraints);
+                    $records = $this->select()->where($unique_where, CSVDB::OR)->get();
+                    if (count($records) > 0) {
+                        // if there are records with constraints present, check if records are identical
+                        $self = $this->select()->where($where)->get();
+                        $index = $this->index;
+                        $check = true;
+                        foreach ($records as $record) {
+                            if ($record[$index] != $self[0][$index]) {
+                                $check = false;
+                            }
+                        }
+                        return $check;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private function check_unique_constraints_missing(array $data, array $constraints): bool
+    {
+        $available = true;
+        foreach ($constraints as $constraint) {
+            if (!array_key_exists($constraint, $data)) {
+                if ($constraint !== $this->index) {
+                    $available = false;
+                }
+            }
+        }
+        return $available;
+    }
+
+    private function check_unique_constraints_available(array $data, array $constraints): bool
+    {
+        $available = false;
+        foreach ($constraints as $constraint) {
+            if (array_key_exists($constraint, $data)) {
+                $available = true;
+            }
+        }
+        return $available;
+    }
+
+    private function prepare_unique_stmt(array $data, array $constraints): array
+    {
+        $where = [];
+        foreach ($constraints as $constraint) {
+            if (array_key_exists($constraint, $data)) {
+                $where[] = [$constraint => $data[$constraint]];
+            }
+        }
+
+        if (count($where) == 1) {
+            return $where[0];
+        }
+        return $where;
+    }
+
+    public function unique_index(): void
+    {
+        $this->unique($this->index);
+    }
+
+    public function unique(string ...$constraint): void
+    {
+        $headers = $this->headers();
+        foreach ($constraint as $value) {
+            if (in_array($value, $headers)) {
+                $this->constraints[$value] = $value;
+            }
+        }
+    }
+
     // CREATE
 
     /**
@@ -154,6 +274,12 @@ class CSVDB implements Builder\Statement
     public function insert(array $data): void
     {
         $writer = $this->writer();
+
+        $constraint = $this->check_unique_constraints($data);
+        if (!$constraint) {
+            throw new CannotInsertRecord("Unique constraints are violated.");
+        }
+
         $data = $this->insert_prepare_stmt($data);
 
         if (is_array($data[0])) {
@@ -426,6 +552,11 @@ class CSVDB implements Builder\Statement
             throw new \Exception('Update is not an associative array.');
         }
 
+        $constraint = $this->check_unique_constraints_update($update, $where);
+        if (!$constraint) {
+            throw new \Exception("Unique constraints are violated.");
+        }
+
         $records = $this->select()->get();
         $this->delete_all();
 
@@ -493,14 +624,21 @@ class CSVDB implements Builder\Statement
             throw new \Exception('Update/insert only one row.');
         }
 
+        $is_update = false;
+
         if (count($where) == 0) {
             $index = $this->index();
-            $where[$index] = $update[$index];
+            if (array_key_exists($index, $update)) {
+                $where[$index] = $update[$index];
+                $count = $this->select()->count()->where($where)->get();
+                $is_update = ($count['count'] > 0);
+            }
+        } else {
+            $count = $this->select()->count()->where($where)->get();
+            $is_update = ($count['count'] > 0);
         }
 
-        $count = $this->select()->count()->where($where)->get();
-
-        if ($count["count"] > 0) {
+        if ($is_update) {
             $this->update($update, $where);
         } else {
             $this->insert($update);
