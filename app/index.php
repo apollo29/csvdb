@@ -100,9 +100,9 @@ row1,test2_1,value5
     */
 
 
-    $test = ["header1" => "test", "header2" => "test", "header3" => "test"];
+    $test = ["header1" => "test", "header2" => "test", "header3" => ""];
     //$csvdb->insert($test);
-    $data = $csvdb->select()->get();
+    $data = $csvdb->select()->where(["header3"=>[CSVDB::EMPTY,CSVDB::NEG]])->get();
     //$data = $csvdb->select()->count()->where(["header1" => "row1"])->get();
     var_dump($data);
     ?>

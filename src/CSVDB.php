@@ -16,9 +16,8 @@ class CSVDB implements Builder\Statement
 {
     /*
      * todo
+     * unique constraints?
      * index column: check if unique?
-     * custom unique?
-     * check empty where stmts
      */
 
     public string $file;
@@ -43,6 +42,7 @@ class CSVDB implements Builder\Statement
     const OR = "or";
 
     const NEG = true;
+    const EMPTY = "";
 
     /**
      * @throws \Exception
@@ -155,7 +155,6 @@ class CSVDB implements Builder\Statement
     {
         $writer = $this->writer();
         $data = $this->insert_prepare_stmt($data);
-        var_dump($data);
 
         if (is_array($data[0])) {
             $writer->insertAll($data);
@@ -295,11 +294,17 @@ class CSVDB implements Builder\Statement
     {
         $key = key($where);
         $value = $where[$key];
+
         if (is_array($value)) {
             if ($value[1]) {
+                if (empty($value[0])) {
+                    return !empty($row[$key]);
+                }
                 return is_bool(strpos($row[$key], $value[0]));
             }
             return strpos($row[$key], $value[0]) !== false;
+        } else if (empty($value)) {
+            return empty($row[$key]);
         }
         return strpos($row[$key], $value) !== false;
     }
