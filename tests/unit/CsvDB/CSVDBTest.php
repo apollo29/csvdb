@@ -534,6 +534,88 @@ class CSVDBTest extends TestCase
         $this->assertEquals($test1, $data3);
     }
 
+    // CONSTRAINTS
+
+    public function testInsertDefaultConstraint()
+    {
+        $raw = $this->prepareDefaultData();
+        $record1 = [$this->header[0] => 'record1', $this->header[1] => 'record1_1', $this->header[2] => 'value0'];
+        $record2 = [$this->header[0] => 'record2', $this->header[1] => 'record1_1', $this->header[2] => 'value5'];
+        $record3 = [$this->header[0] => 'record3', $this->header[1] => 'record1_1', $this->header[2] => 'value6'];
+
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+        $csvdb->unique('header3');
+        $csvdb->unique_index();
+
+        $test1 = $raw;
+        $test1[] = $record1;
+        $csvdb->insert($record1);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+
+        $this->expectExceptionMessage("Unique constraints are violated.");
+        $csvdb->insert(array($record2, $record3));
+    }
+
+    public function testUpdateDefaultConstraint()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+        $csvdb->unique('header3');
+        $csvdb->unique_index();
+
+        $test1 = $raw;
+        $test1[0]["header2"] = "update";
+        $test1[1]["header2"] = "update";
+        $test1[2]["header2"] = "update";
+        $csvdb->update(["header2" => "update"], ["header2" => "test2_1"]);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+
+        $this->expectExceptionMessage("Unique constraints are violated.");
+        $csvdb->update(["header3" => "value1"], ["header1" => "row1"]);
+    }
+
+    public function testUpsertUpdateConstraint()
+    {
+        $raw = $this->prepareDefaultData();
+
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+        $csvdb->unique('header1','header3');
+
+        $test1 = $raw;
+        $test1[0]["header2"] = "update";
+
+        $csvdb->upsert($test1[0], ["header1" => "row1"]);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+
+        $this->expectExceptionMessage("Unique constraints are violated.");
+        $csvdb->upsert(["header3" => "value1"], ["header1" => "row1"]);
+    }
+
+    public function testUpsertInsertConstraint()
+    {
+        $raw = $this->prepareDefaultData();
+        $record1 = [$this->header[0] => 'record1', $this->header[1] => 'record1_1', $this->header[2] => 'value0'];
+        $record2 = [$this->header[0] => 'record2', $this->header[1] => 'record1_1', $this->header[2] => 'value5'];
+
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+        $csvdb->unique('header1','header3');
+
+        $test1 = $raw;
+        $test1[5] = $record1;
+        $csvdb->upsert($record1);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+
+        $this->expectExceptionMessage("Unique constraints are violated.");
+        $csvdb->upsert($record2);
+    }
 
     // CONVERTER
 
