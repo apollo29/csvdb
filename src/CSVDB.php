@@ -14,12 +14,6 @@ use League\Csv\Writer;
 
 class CSVDB implements Builder\Statement
 {
-    /*
-     * todo
-     * unique constraints?
-     * index column: check if unique?
-     */
-
     public string $file;
     public string $document;
     public string $basedir;
@@ -150,6 +144,9 @@ class CSVDB implements Builder\Statement
 
     // CONSTRAINTS
 
+    /**
+     * @throws CannotInsertRecord
+     */
     private function check_unique_constraints(array $data): bool
     {
         if (count($this->constraints) > 0) {
@@ -360,7 +357,7 @@ class CSVDB implements Builder\Statement
             if (is_numeric($index)) {
                 return intval($index) + 1;
             } else {
-                throw new \Exception("There is an error with your CSV file. Autoincrement is activated but an Index field is not numeric.");
+                throw new \Exception("There is an error with your CSV file. Autoincrement is activated but Index field is not numeric.");
             }
         }
         return 1;

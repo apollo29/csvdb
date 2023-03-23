@@ -534,6 +534,26 @@ class CSVDBTest extends TestCase
         $this->assertEquals($test1, $data3);
     }
 
+    public function testAutoincrementException1()
+    {
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file, new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, CSVConfig::HISTORY, true));
+
+        $record1 = [$this->header[1] => 'record1_1', $this->header[2] => 'value0'];
+        $this->expectExceptionMessage("There is an error with your CSV file. Autoincrement is activated but Index field is not numeric.");
+        $csvdb->insert($record1);
+    }
+
+    public function testAutoincrementException2()
+    {
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file, new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, CSVConfig::HISTORY, true));
+
+        $record2 = [$this->header[0] => 'value12', $this->header[1] => 'record1_1', $this->header[2] => 'value0'];
+        $this->expectExceptionMessage("Error on Insert Statement. Autoincrement is activated but Index Field is filled and not numeric: '".$record2['header1']."'");
+        $csvdb->insert($record2);
+    }
+
     // CONSTRAINTS
 
     public function testInsertDefaultConstraint()
