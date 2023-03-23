@@ -20,10 +20,11 @@
 
 
     use CSVDB\CSVDB;
+    use CSVDB\Helpers\CSVConfig;
 
     require '../vendor/autoload.php';
 
-    $csvdb = new CSVDB(__DIR__ . "/csv/phpunit.csv");
+    $csvdb = new CSVDB(__DIR__ . "/csv/phpunit.csv", new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, CSVConfig::HISTORY, true));
 
     $records = [
         [1, 2, 3],
@@ -59,28 +60,28 @@
 
     function prepareDefaultData(): array
     {
-        $header = array('header1', 'header2', 'header3');
+        $header = array('index', 'header1', 'header2', 'header3');
         $data = array(
-            array('row6', 'test2_1', 'value5'),
-            array('row7', 'test2_1', 'value4'),
-            array('row8', 'test2_1', 'value3'),
-            array('row9', 'test2_2', 'value2'),
-            array('row10', 'test2_3', 'value1')
+            array(10, 'row1', 'test2_1', 'value5'),
+            array(11, 'row2', 'test2_1', 'value4'),
+            array(12, 'row3', 'test2_1', 'value3'),
+            array(13, 'row4', 'test2_2', 'value2'),
+            array(14, 'row5', 'test2_3', 'value1')
         );
 
         $raw = array();
-        $raw[] = [$header[0] => $data[0][0], $header[1] => $data[0][1], $header[2] => $data[0][2]];
-        $raw[] = [$header[0] => $data[1][0], $header[1] => $data[1][1], $header[2] => $data[1][2]];
-        $raw[] = [$header[0] => $data[2][0], $header[1] => $data[2][1], $header[2] => $data[2][2]];
-        $raw[] = [$header[0] => $data[3][0], $header[1] => $data[3][1], $header[2] => $data[3][2]];
-        $raw[] = [$header[0] => $data[4][0], $header[1] => $data[4][1], $header[2] => $data[4][2]];
+        $raw[] = [$header[0] => $data[0][0], $header[1] => $data[0][1], $header[2] => $data[0][2], $header[3] => $data[0][3]];
+        $raw[] = [$header[0] => $data[1][0], $header[1] => $data[1][1], $header[2] => $data[1][2], $header[3] => $data[1][3]];
+        $raw[] = [$header[0] => $data[2][0], $header[1] => $data[2][1], $header[2] => $data[2][2], $header[3] => $data[2][3]];
+        $raw[] = [$header[0] => $data[3][0], $header[1] => $data[3][1], $header[2] => $data[3][2], $header[3] => $data[3][3]];
+        $raw[] = [$header[0] => $data[4][0], $header[1] => $data[4][1], $header[2] => $data[4][2], $header[3] => $data[4][3]];
         return $raw;
     }
 
     $test1 = prepareDefaultData();
-    $test1[0]["header2"] = "update0";
-    $test1[1]["header2"] = "update1";
-    $test1[2]["header2"] = "update2";
+    //$test1[0]["header2"] = "update0";
+    //$test1[1]["header2"] = "update1";
+    //$test1[2]["header2"] = "update2";
 
     //var_dump($test1[0]);
     /*
@@ -94,7 +95,16 @@
 
         $data = $csvdb->select()->where(["header1" => "row3"])->get();
         var_dump($data);
+    header1,header2,header3
+row1,test2_1,value5
     */
+
+
+    $test = ["header1" => "test", "header2" => "test", "header3" => "test"];
+    //$csvdb->insert($test);
+    $data = $csvdb->select()->get();
+    //$data = $csvdb->select()->count()->where(["header1" => "row1"])->get();
+    var_dump($data);
     ?>
 </pre>
 

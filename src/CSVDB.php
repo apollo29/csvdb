@@ -9,7 +9,7 @@ use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
 use League\Csv\Statement;
-use League\Csv\TabularDataReader;
+use League\Csv\UnableToProcessCsv;
 use League\Csv\Writer;
 
 class CSVDB implements Builder\Statement
@@ -18,9 +18,7 @@ class CSVDB implements Builder\Statement
      * todo
      * index column: check if unique?
      * custom unique?
-     * auto increment
      * check empty where stmts
-     * Select Builder
      */
 
     public string $file;
@@ -157,6 +155,8 @@ class CSVDB implements Builder\Statement
     {
         $writer = $this->writer();
         $data = $this->insert_prepare_stmt($data);
+        var_dump($data);
+
         if (is_array($data[0])) {
             $writer->insertAll($data);
         } else {
@@ -174,20 +174,71 @@ class CSVDB implements Builder\Statement
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     private function insert_prepare_stmt(array $data): array
     {
+        if ($this->config->autoincrement && count($this->headers()) == count($data)) {
+            if (isset($data[$this->config->index])) {
+                $index = $data[$this->config->index];
+            } else {
+                $index = $data[$this->index];
+            }
+            if (!is_numeric($index)) {
+                throw new \Exception("Error on Insert Statement. Autoincrement is activated but Index Field is filled and not numeric: '$index'");
+            }
+        }
+
         if ($this->has_headers($this->headers(), $data)) {
             if ($this->has_multiple_records($data)) {
                 $records = array();
                 foreach ($data as $record) {
-                    $records[] = array_values($record);
+                    $records[] = $this->add_autoincrement_value(array_values($record));
                 }
                 return $records;
             }
-            return array_values($data);
+            return $this->add_autoincrement_value(array_values($data));
         } else {
-            return $data;
+            return $this->add_autoincrement_value($data);
         }
+    }
+
+    /**
+     * @throws UnableToProcessCsv
+     * @throws InvalidArgument
+     * @throws Exception
+     */
+    private function add_autoincrement_value(array $data): array
+    {
+        if ($this->config->autoincrement && count($this->headers()) != count($data)) {
+            $pos = $this->config->index;
+            $index = $this->autoincrement_value();
+            $data = array_merge(array_slice($data, 0, $pos), array($index), array_slice($data, $pos));
+        }
+        return $data;
+    }
+
+    /**
+     * @throws UnableToProcessCsv
+     * @throws InvalidArgument
+     * @throws Exception
+     */
+    private function autoincrement_value(): int
+    {
+        $reader = $this->reader();
+        $count = $reader->count();
+        if ($count > 0) {
+            $last = $count - 1;
+            $record = $reader->fetchOne($last);
+            $index = $record[$this->index];
+            if (is_numeric($index)) {
+                return intval($index) + 1;
+            } else {
+                throw new \Exception("There is an error with your CSV file. Autoincrement is activated but an Index field is not numeric.");
+            }
+        }
+        return 1;
     }
 
     // READ
@@ -198,31 +249,6 @@ class CSVDB implements Builder\Statement
         return $this;
     }
 
-    private function select_stmt(TabularDataReader $records): array
-    {
-        if (count($this->select) > 1) {
-            $data = array();
-            foreach ($records as $row) {
-                $data[] = $this->create_select_stmt($row);
-            }
-            return $data;
-        }
-        return $records->jsonSerialize();
-    }
-
-    private function create_select_stmt(array $row): array
-    {
-        return array_filter($row, function ($k) {
-            $valid = $k == $this->select[0];
-            if (count($this->select) > 1) {
-                for ($i = 1; $i < count($this->select); $i++) {
-                    $valid = $valid || $k == $this->select[$i];
-                }
-            }
-            return $valid;
-        }, ARRAY_FILTER_USE_KEY);
-    }
-    
     public function count(): Builder\Statement
     {
         $this->count = true;
@@ -356,19 +382,23 @@ class CSVDB implements Builder\Statement
             $stmt = $stmt->limit($this->limit);
         }
 
-        $records = $stmt->process($reader);
+        // select
+        if (count($this->select) > 0) {
+            $records = $stmt->process($reader, $this->select);
+        } else {
+            $records = $stmt->process($reader);
+        }
 
         if ($this->count) {
             // count
             $data = array("count" => $records->count());
-        } else {
-            // select
-            $data = $this->select_stmt($records);
         }
 
         // converter
         if (isset($converter)) {
-            $data = $converter->convert($data);
+            $data = $converter->convert($records);
+        } elseif (!$this->count) {
+            $data = $records->jsonSerialize();
         }
 
         // reset
