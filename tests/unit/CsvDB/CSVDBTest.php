@@ -263,6 +263,25 @@ class CSVDBTest extends TestCase
         $this->assertEquals($test4, $data4);
     }
 
+    public function testSelectDefaultWhereLike()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $data1 = $csvdb->select()->where(["header2"=>"test2"])->get();
+        $this->assertEquals(array(), $data1);
+
+        $data2 = $csvdb->select()->where(["header2"=>["test2", CSVDB::LIKE]])->get();
+        $this->assertEquals($raw, $data2);
+
+        $test3 = array();
+        $test3[]=$raw[3];
+        $test3[]=$raw[4];
+        $data3 = $csvdb->select()->where(["header2"=>["test2_1", CSVDB::NEG]])->get();
+        $this->assertEquals($test3, $data3);
+    }
+
     public function testSelectCustomWhere()
     {
         $raw = $this->prepareDefaultData();
