@@ -39,6 +39,7 @@ class CSVDB implements Builder\Statement
     const OR = "or";
 
     const NEG = true;
+    const LIKE = "like";
     const EMPTY = "";
 
     /**
@@ -444,13 +445,16 @@ class CSVDB implements Builder\Statement
                 if (empty($value[0])) {
                     return !empty($row[$key]);
                 }
-                return is_bool(strpos($row[$key], $value[0]));
+                return $row[$key]!==$value[0];
             }
-            return strpos($row[$key], $value[0]) !== false;
+            else if ($value[1]===self::LIKE) {
+                return strpos($row[$key], $value[0]) !== false;
+            }
+            return $row[$key]===$value[0];
         } else if (empty($value)) {
             return empty($row[$key]);
         }
-        return strpos($row[$key], $value) !== false;
+        return $row[$key]===$value;
     }
 
     public function orderBy($orderVal = array()): Builder\Statement

@@ -24,7 +24,7 @@
 
     require '../vendor/autoload.php';
 
-    $csvdb = new CSVDB(__DIR__ . "/csv/phpunit.csv", new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, CSVConfig::HISTORY, true));
+    $csvdb = new CSVDB(__DIR__ . "/csv/games.csv", new CSVConfig(1, CSVConfig::ENCODING, ";", CSVConfig::HEADERS, CSVConfig::CACHE, CSVConfig::HISTORY, false));
 
     $records = [
         [1, 2, 3],
@@ -98,7 +98,7 @@
     header1,header2,header3
 row1,test2_1,value5
     */
-
+/*
     $csvdb->unique("header3", "header1");
     $csvdb->unique_index();
 
@@ -108,6 +108,10 @@ row1,test2_1,value5
     //$csvdb->update($test,["header2"=>"test2_1"]);
     $data = $csvdb->select()->get(); //[["header1" => "row1"],["header3" => "value1"]]
     //$data = $csvdb->select()->where(["header1" => "row1"],CSVDB::OR)->get();
+    var_dump($data);
+*/
+
+    $data = $csvdb->select()->where(["Spielnummer" => 1])->get();
     var_dump($data);
     ?>
 </pre>
