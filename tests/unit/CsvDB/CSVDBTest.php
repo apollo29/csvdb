@@ -395,9 +395,10 @@ class CSVDBTest extends TestCase
         $test1[0]["header2"] = "update";
         $test1[1]["header2"] = "update";
         $test1[2]["header2"] = "update";
-        $csvdb->update(["header2" => "update"], ["header2" => "test2_1"]);
+        $result = $csvdb->update(["header2" => "update"], ["header2" => "test2_1"]);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
+        $this->assertEquals($result, [$test1[0],$test1[1],$test1[2]]);
     }
 
     public function testUpdateDefaultMultipleFields()

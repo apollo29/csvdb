@@ -292,7 +292,11 @@ class CSVDB implements Builder\Statement
 
     /**
      * @param array $data
-     * @throws CannotInsertRecord|Exception|InvalidArgument|UnableToProcessCsv
+     * @return array
+     * @throws CannotInsertRecord
+     * @throws Exception
+     * @throws InvalidArgument
+     * @throws UnableToProcessCsv
      */
     public function insert(array $data): array
     {
@@ -584,11 +588,16 @@ class CSVDB implements Builder\Statement
     // UPDATE
 
     /**
+     * @param array $update
+     * @param array $where
+     * @return array
+     * @throws CannotInsertRecord
+     * @throws Exception
      * @throws InvalidArgument
-     * @throws Exception|UnableToProcessCsv
+     * @throws UnableToProcessCsv
      * @throws \Exception
      */
-    public function update(array $update = array(), array $where = array()): void
+    public function update(array $update = array(), array $where = array()): array
     {
         if (count($update) == 0) {
             throw new \Exception('Nothing to update.');
@@ -611,9 +620,18 @@ class CSVDB implements Builder\Statement
             $data[] = $this->update_stmts($record, $update, $where);
         }
 
+        $result = array_udiff_assoc($data, $records, function ($a, $b) {
+            return array_diff_assoc($a, $b);
+        });
         if (count($data) > 0) {
-            $this->insert($data);
+            $writer = $this->writer();
+            if (count($data) > 1) {
+                $writer->insertAll($data);
+            } else {
+                $writer->insertOne($data);
+            }
         }
+        return $result;
     }
 
     private function update_stmts(array $record, array $update, array $where): array

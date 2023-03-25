@@ -103,13 +103,14 @@ row1,test2_1,value5
     $csvdb->unique_index();
 */
     $test = ["header1" => "row6", "header2" => "test2", "header3" => "value6"];
-    $result = $csvdb->insert($test);
-    var_dump($result);
+    //$result = $csvdb->insert($test);
+    //var_dump($result);
     //$csvdb->upsert($test,["index"=>7]);
-    //$csvdb->update($test,["header2"=>"test2_1"]);
+    $result = $csvdb->update(["header3"=>"***UPDATE***"],["header2"=>"test2_1"]);
     //$data = $csvdb->select()->get(); //[["header1" => "row1"],["header3" => "value1"]]
     //$data = $csvdb->select()->where(["header1" => "row1"],CSVDB::OR)->get();
     //var_dump($data);
+    var_dump($result);
 
     ?>
 </pre>
