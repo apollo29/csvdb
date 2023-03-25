@@ -108,18 +108,23 @@ class CSVDBTest extends TestCase
         $csvdb = new CSVDB($file);
 
         $test1 = $raw;
-        $test1[] = [$this->header[0] => $record1[0], $this->header[1] => $record1[1], $this->header[2] => $record1[2]];
-        $csvdb->insert($record1);
+        $record1_raw = [$this->header[0] => $record1[0], $this->header[1] => $record1[1], $this->header[2] => $record1[2]];
+        $test1[] = $record1_raw;
+        $result1 = $csvdb->insert($record1);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
+        $this->assertEquals($result1[0], $record1_raw);
 
         $test2 = $raw;
-        $test2[] = [$this->header[0] => $record1[0], $this->header[1] => $record1[1], $this->header[2] => $record1[2]];
-        $test2[] = [$this->header[0] => $record2[0], $this->header[1] => $record2[1], $this->header[2] => $record2[2]];
-        $test2[] = [$this->header[0] => $record3[0], $this->header[1] => $record3[1], $this->header[2] => $record3[2]];
-        $csvdb->insert(array($record2, $record3));
+        $record2_raw = [$this->header[0] => $record2[0], $this->header[1] => $record2[1], $this->header[2] => $record2[2]];
+        $record3_raw = [$this->header[0] => $record3[0], $this->header[1] => $record3[1], $this->header[2] => $record3[2]];
+        $test2[] = $record1_raw;
+        $test2[] = $record2_raw;
+        $test2[] = $record3_raw;
+        $result2 = $csvdb->insert(array($record2, $record3));
         $data2 = $csvdb->select()->get();
         $this->assertEquals($test2, $data2);
+        $this->assertEquals($result2, [$record2_raw,$record3_raw]);
     }
 
     // READ
