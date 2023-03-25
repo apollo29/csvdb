@@ -294,7 +294,7 @@ class CSVDB implements Builder\Statement
      * @param array $data
      * @throws CannotInsertRecord|Exception|InvalidArgument|UnableToProcessCsv
      */
-    public function insert(array $data): void
+    public function insert(array $data): array
     {
         $writer = $this->writer();
 
@@ -305,7 +305,9 @@ class CSVDB implements Builder\Statement
 
         $data = $this->insert_prepare_stmt($data);
 
+        $amount = 1;
         if (is_array($data[0])) {
+            $amount = count($data);
             $writer->insertAll($data);
         } else {
             $writer->insertOne($data);
@@ -320,6 +322,25 @@ class CSVDB implements Builder\Statement
         if ($this->config->history) {
             $this->history();
         }
+
+        return $this->insert_record($amount);
+    }
+
+    /**
+     * @throws UnableToProcessCsv
+     * @throws InvalidArgument
+     * @throws Exception
+     */
+    private function insert_record(int $amount = 1): array
+    {
+        $reader = $this->reader();
+        $count = $reader->count();
+        $last = $count - $amount;
+        $records = [];
+        for ($i = $last; $i < $count; $i++) {
+            $records[] = $reader->fetchOne($i);
+        }
+        return $records;
     }
 
     /**
