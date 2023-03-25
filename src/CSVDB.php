@@ -445,16 +445,15 @@ class CSVDB implements Builder\Statement
                 if (empty($value[0])) {
                     return !empty($row[$key]);
                 }
-                return $row[$key]!==$value[0];
-            }
-            else if ($value[1]===self::LIKE) {
+                return $row[$key] !== $value[0];
+            } else if ($value[1] === self::LIKE) {
                 return strpos($row[$key], $value[0]) !== false;
             }
-            return $row[$key]===$value[0];
+            return $row[$key] === $value[0];
         } else if (empty($value)) {
             return empty($row[$key]);
         }
-        return $row[$key]===$value;
+        return $row[$key] === $value;
     }
 
     public function orderBy($orderVal = array()): Builder\Statement
@@ -677,12 +676,13 @@ class CSVDB implements Builder\Statement
      * @throws InvalidArgument
      * @throws Exception
      */
-    public function delete(array $where = array()): void
+    public function delete(array $where = array()): bool
     {
+        $reader = $this->reader();
         if (count($where) == 0) {
             $this->delete_all();
+            $count = $reader->count();
         } else {
-            $reader = $this->reader();
             $stmt = Statement::create()->where(function ($row) use ($where) {
                 return $this->delete_where_stmts($row, $where);
             });
@@ -694,6 +694,8 @@ class CSVDB implements Builder\Statement
             $writer = $this->writer("w+");
             $writer->insertOne($headers);
             $writer->insertAll($data);
+
+            $count = $this->select()->count()->where($where)->get()['count'];
         }
 
         // cache
@@ -705,6 +707,8 @@ class CSVDB implements Builder\Statement
         if ($this->config->history) {
             $this->history();
         }
+
+        return $count == 0;
     }
 
     /**

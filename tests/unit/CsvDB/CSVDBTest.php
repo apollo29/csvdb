@@ -233,7 +233,7 @@ class CSVDBTest extends TestCase
         $file = vfsStream::url("assets/" . $this->filename);
         $csvdb = new CSVDB($file);
 
-        $record1 = ['header1'=>'row6', 'header2'=>'', 'header3'=>'value10'];
+        $record1 = ['header1' => 'row6', 'header2' => '', 'header3' => 'value10'];
         $csvdb->insert($record1);
         $test1 = array();
         $test1[] = $raw[0];
@@ -247,10 +247,10 @@ class CSVDBTest extends TestCase
 
         $test2 = array();
         $test2[] = $record1;
-        $data2 = $csvdb->select()->where(["header2"=>""])->get();
+        $data2 = $csvdb->select()->where(["header2" => ""])->get();
         $this->assertEquals($test2, $data2);
 
-        $data3 = $csvdb->select()->where(["header2"=>CSVDB::EMPTY])->get();
+        $data3 = $csvdb->select()->where(["header2" => CSVDB::EMPTY])->get();
         $this->assertEquals($test2, $data3);
 
         $test4 = array();
@@ -259,7 +259,7 @@ class CSVDBTest extends TestCase
         $test4[] = $raw[2];
         $test4[] = $raw[3];
         $test4[] = $raw[4];
-        $data4 = $csvdb->select()->where(["header2"=>[CSVDB::EMPTY,CSVDB::NEG]])->get();
+        $data4 = $csvdb->select()->where(["header2" => [CSVDB::EMPTY, CSVDB::NEG]])->get();
         $this->assertEquals($test4, $data4);
     }
 
@@ -269,16 +269,16 @@ class CSVDBTest extends TestCase
         $file = vfsStream::url("assets/" . $this->filename);
         $csvdb = new CSVDB($file);
 
-        $data1 = $csvdb->select()->where(["header2"=>"test2"])->get();
+        $data1 = $csvdb->select()->where(["header2" => "test2"])->get();
         $this->assertEquals(array(), $data1);
 
-        $data2 = $csvdb->select()->where(["header2"=>["test2", CSVDB::LIKE]])->get();
+        $data2 = $csvdb->select()->where(["header2" => ["test2", CSVDB::LIKE]])->get();
         $this->assertEquals($raw, $data2);
 
         $test3 = array();
-        $test3[]=$raw[3];
-        $test3[]=$raw[4];
-        $data3 = $csvdb->select()->where(["header2"=>["test2_1", CSVDB::NEG]])->get();
+        $test3[] = $raw[3];
+        $test3[] = $raw[4];
+        $data3 = $csvdb->select()->where(["header2" => ["test2_1", CSVDB::NEG]])->get();
         $this->assertEquals($test3, $data3);
     }
 
@@ -490,7 +490,8 @@ class CSVDBTest extends TestCase
         $file = vfsStream::url("assets/" . $this->filename);
         $csvdb = new CSVDB($file);
 
-        $csvdb->delete();
+        $delete = $csvdb->delete();
+        $this->assertTrue($delete);
         $data1 = $csvdb->select()->get();
         $this->assertEmpty($data1);
     }
@@ -504,7 +505,8 @@ class CSVDBTest extends TestCase
         $test1 = array();
         $test1[] = $raw[3];
         $test1[] = $raw[4];
-        $csvdb->delete(["header2" => "test2_1"]);
+        $delete = $csvdb->delete(["header2" => "test2_1"]);
+        $this->assertTrue($delete);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
     }
@@ -520,7 +522,8 @@ class CSVDBTest extends TestCase
         $test1[] = $raw[2];
         $test1[] = $raw[3];
         $test1[] = $raw[4];
-        $csvdb->delete([["header2" => "test2_1"], ["header3" => "value5"]]);
+        $delete = $csvdb->delete([["header2" => "test2_1"], ["header3" => "value5"]]);
+        $this->assertTrue($delete);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
     }
@@ -569,7 +572,7 @@ class CSVDBTest extends TestCase
         $csvdb = new CSVDB($file, new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, CSVConfig::HISTORY, true));
 
         $record2 = [$this->header[0] => 'value12', $this->header[1] => 'record1_1', $this->header[2] => 'value0'];
-        $this->expectExceptionMessage("Error on Insert Statement. Autoincrement is activated but Index Field is filled and not numeric: '".$record2['header1']."'");
+        $this->expectExceptionMessage("Error on Insert Statement. Autoincrement is activated but Index Field is filled and not numeric: '" . $record2['header1'] . "'");
         $csvdb->insert($record2);
     }
 
@@ -623,7 +626,7 @@ class CSVDBTest extends TestCase
 
         $file = vfsStream::url("assets/" . $this->filename);
         $csvdb = new CSVDB($file);
-        $csvdb->unique('header1','header3');
+        $csvdb->unique('header1', 'header3');
 
         $test1 = $raw;
         $test1[0]["header2"] = "update";
@@ -644,7 +647,7 @@ class CSVDBTest extends TestCase
 
         $file = vfsStream::url("assets/" . $this->filename);
         $csvdb = new CSVDB($file);
-        $csvdb->unique('header1','header3');
+        $csvdb->unique('header1', 'header3');
 
         $test1 = $raw;
         $test1[5] = $record1;
