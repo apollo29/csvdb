@@ -680,7 +680,7 @@ class CSVDB implements Builder\Statement
      * @throws Exception|UnableToProcessCsv
      * @throws \Exception
      */
-    public function upsert(array $update, array $where = array()): void
+    public function upsert(array $update, array $where = array()): array
     {
         if (count($update) == 0) {
             throw new \Exception('Nothing to update/insert.');
@@ -703,10 +703,12 @@ class CSVDB implements Builder\Statement
         }
 
         if ($is_update) {
-            $this->update($update, $where);
+            $result = $this->update($update, $where);
         } else {
-            $this->insert($update);
+            $result = $this->insert($update);
         }
+
+        return $result;
     }
 
     // DELETE

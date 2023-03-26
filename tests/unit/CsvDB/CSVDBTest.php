@@ -124,7 +124,7 @@ class CSVDBTest extends TestCase
         $result2 = $csvdb->insert(array($record2, $record3));
         $data2 = $csvdb->select()->get();
         $this->assertEquals($test2, $data2);
-        $this->assertEquals($result2, [$record2_raw,$record3_raw]);
+        $this->assertEquals($result2, [$record2_raw, $record3_raw]);
     }
 
     // READ
@@ -398,7 +398,7 @@ class CSVDBTest extends TestCase
         $result = $csvdb->update(["header2" => "update"], ["header2" => "test2_1"]);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
-        $this->assertEquals($result, [$test1[0],$test1[1],$test1[2]]);
+        $this->assertEquals($result, [$test1[0], $test1[1], $test1[2]]);
     }
 
     public function testUpdateDefaultMultipleFields()
@@ -468,11 +468,14 @@ class CSVDBTest extends TestCase
         $csvdb = new CSVDB($file);
 
         $test1 = $raw;
+        $test1_raw = [$this->header[0] => $raw[0]['header1'], $this->header[1] => "update", $this->header[2] => $raw[0]['header3']];
         $test1[0]["header2"] = "update";
 
-        $csvdb->upsert($test1[0], ["header1" => "row1"]);
+        $upsert = $csvdb->upsert($test1[0], ["header1" => "row1"]);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
+        $this->assertEquals($upsert[0], $test1_raw);
+        $this->assertEquals(count($upsert), 1);
     }
 
     public function testUpsertInsert()
@@ -484,9 +487,10 @@ class CSVDBTest extends TestCase
         $record1 = array('header1' => 'record1', 'header2' => 'record1_1', 'header3' => 'value0');
         $test1 = $raw;
         $test1[5] = $record1;
-        $csvdb->upsert($record1);
+        $upsert = $csvdb->upsert($record1);
         $data1 = $csvdb->select()->get();
         $this->assertEquals($test1, $data1);
+        $this->assertEquals($upsert[0], $record1);
     }
 
     // DELETE
