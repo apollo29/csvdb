@@ -9,7 +9,8 @@
   },
   "require": {
     "php": "^7.4 || ^8.0",
-    "league/csv": "^9.8"
+    "league/csv": "^9.8",
+    "ext-mbstring": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5",

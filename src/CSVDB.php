@@ -4,6 +4,7 @@ namespace CSVDB;
 
 use CSVDB\Helpers\CSVConfig;
 use CSVDB\Helpers\CSVUtilities;
+use CSVDB\Helpers\Str;
 use DateTime;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
@@ -38,9 +39,9 @@ class CSVDB implements Builder\Statement
     const AND = "and";
     const OR = "or";
 
-    const NEG = true;
-    const LIKE = "like";
-    const EMPTY = "";
+    const NEG = "[CSVDB::NEG]";
+    const LIKE = "[CSVDB::LIKE]";
+    const EMPTY = "[CSVDB::EMPTY]";
 
     /**
      * @throws \Exception
@@ -466,19 +467,90 @@ class CSVDB implements Builder\Statement
         $value = $where[$key];
 
         if (is_array($value)) {
-            if ($value[1]) {
-                if (empty($value[0])) {
-                    return !empty($row[$key]);
-                }
-                return $row[$key] !== $value[0];
-            } else if ($value[1] === self::LIKE) {
-                return strpos($row[$key], $value[0]) !== false;
-            }
-            return $row[$key] === $value[0];
-        } else if (empty($value)) {
+            return $this->where_stmt_array($row[$key], $value);
+
+            /*
+                        if ($value[1] === self::NEG) {
+                            // NEGATIVE
+                            if (empty($value[0]) || $value[0] === self::EMPTY) {
+                                return !empty($row[$key]);
+                            } else if (is_array($value[0])) {
+                                $return = false;
+                                foreach ($value as $val) {
+                                    if ($row[$key] != $val) {
+                                        $return = true;
+                                    }
+                                }
+                                return $return;
+                            }
+                            return $row[$key] !== $value[0];
+                        } else if ($value[1] === self::LIKE) {
+                            // LIKE
+                            return strpos($row[$key], $value[0]) !== false;
+                        } else {
+                            // MULTI VALUES
+                            $return = false;
+                            foreach ($value as $val) {
+                                if ($row[$key] == $val) {
+                                    $return = true;
+                                }
+                            }
+                            return $return;
+                        }
+            */
+        } else if (empty($value) || $value === self::EMPTY) {
             return empty($row[$key]);
         }
         return $row[$key] === $value;
+    }
+
+    private function where_stmt_array(string $record, array $value): bool
+    {
+        if (empty($value[1]) || $value[1] === self::EMPTY) {
+            return $this->where_is_empty($record);
+        } else if ($value[1] === self::LIKE) {
+            return $this->where_is_like($record, $value[0]);
+        } else if ($value[1] === self::NEG) {
+            return $this->where_is_negative($record, $value[0]);
+        } else {
+            return $this->where_is_array($record, $value);
+        }
+    }
+
+    private function where_is_empty(string $record): bool
+    {
+        return empty($record);
+    }
+
+    private function where_is_like(string $record, $value): bool
+    {
+        if (is_array($value)) {
+            $return = false;
+            foreach ($value as $val) {
+                if (Str::contains($record, $val)) {
+                    $return = true;
+                }
+            }
+            return $return;
+        }
+        var_dump(strpos($record, $value) !== false);
+        var_dump(Str::contains($record, $value));
+        return Str::contains($record, $value);
+    }
+
+    private function where_is_negative(string $record, $value): bool
+    {
+        if (empty($value) || $value === self::EMPTY) {
+            return !$this->where_is_empty($record);
+        } else if (is_array($value)) {
+            return !$this->where_stmt_array($record, $value);
+        }
+        return $record !== $value;
+    }
+
+    private function where_is_array(string $record, array $value): bool
+    {
+        return in_array($record, $value);
     }
 
     public function orderBy($orderVal = array()): Builder\Statement
