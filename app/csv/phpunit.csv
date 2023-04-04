@@ -1,6 +1,7 @@
-index,header1,header2,header3
-1,row1,test2_1,***UPDATE***
-2,row2,test2_1,***UPDATE***
-3,row3,test2_1,***UPDATE***
-4,row4,test2_2,value2
-5,row5,test2_3,value1
+header1,header2,header3
+row1,test2_1,value5
+row2,test2_1,value4
+row3,test2_1,value3
+row4,test2_2,value2
+row5,test2_3,value1
+row6,test2_5,value0

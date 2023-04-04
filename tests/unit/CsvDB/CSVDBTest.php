@@ -252,6 +252,19 @@ class CSVDBTest extends TestCase
         $this->assertEquals($test2, $data2);
     }
 
+    public function testSelectDefaultWhereMultipleOperator()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = array();
+        $test1[] = $raw[0];
+        $test1[] = $raw[2];
+        $data1 = $csvdb->select()->where([[["header1" => "row1"], ["header3" => "value3"], CSVDB::OR], ["header2"=>"test2_1"]])->get();
+        $this->assertEquals($test1, $data1);
+    }
+
     public function testSelectDefaultWhereEmpty()
     {
         $raw = $this->prepareDefaultData();

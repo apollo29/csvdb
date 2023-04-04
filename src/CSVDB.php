@@ -440,7 +440,17 @@ class CSVDB implements Builder\Statement
         if (count($where_array) > 1) {
             $return = null;
             foreach ($where_array as $where) {
-                $return = $this->create_where_stmts($return, $row, $where, $this->operator);
+                if (count($where) > 1) {
+                    $last = array_key_last($where);
+                    $operator = $where[$last];
+                    foreach ($where as $multiple) {
+                        if (is_array($multiple)) {
+                            $return = $this->create_where_stmts($return, $row, $multiple, $operator);
+                        }
+                    }
+                } else {
+                    $return = $this->create_where_stmts($return, $row, $where, $this->operator);
+                }
             }
             return $return;
         } else {
@@ -468,36 +478,6 @@ class CSVDB implements Builder\Statement
 
         if (is_array($value)) {
             return $this->where_stmt_array($row[$key], $value);
-
-            /*
-                        if ($value[1] === self::NEG) {
-                            // NEGATIVE
-                            if (empty($value[0]) || $value[0] === self::EMPTY) {
-                                return !empty($row[$key]);
-                            } else if (is_array($value[0])) {
-                                $return = false;
-                                foreach ($value as $val) {
-                                    if ($row[$key] != $val) {
-                                        $return = true;
-                                    }
-                                }
-                                return $return;
-                            }
-                            return $row[$key] !== $value[0];
-                        } else if ($value[1] === self::LIKE) {
-                            // LIKE
-                            return strpos($row[$key], $value[0]) !== false;
-                        } else {
-                            // MULTI VALUES
-                            $return = false;
-                            foreach ($value as $val) {
-                                if ($row[$key] == $val) {
-                                    $return = true;
-                                }
-                            }
-                            return $return;
-                        }
-            */
         } else if (empty($value) || $value === self::EMPTY) {
             return empty($row[$key]);
         }
