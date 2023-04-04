@@ -263,6 +263,12 @@ class CSVDBTest extends TestCase
         $test1[] = $raw[2];
         $data1 = $csvdb->select()->where([[["header1" => "row1"], ["header3" => "value3"], CSVDB::OR], ["header2"=>"test2_1"]])->get();
         $this->assertEquals($test1, $data1);
+
+        $test2 = array();
+        $test2[] = $raw[0];
+        $test2[] = $raw[2];
+        $data2 = $csvdb->select()->where([["header1" => "row1"], ["header3" => "value3"], CSVDB::OR])->get();
+        $this->assertEquals($test2, $data2);
     }
 
     public function testSelectDefaultWhereEmpty()

@@ -436,20 +436,26 @@ class CSVDB implements Builder\Statement
     private function where_stmt(array $row): bool
     {
         $where_array = $this->where;
-
         if (count($where_array) > 1) {
+            $operator = $this->operator;
+            $last = array_key_last($where_array);
+            if ($where_array[$last] === self::AND || $where_array[$last] === self::OR) {
+                $operator = $where_array[$last];
+                unset($where_array[$last]);
+            }
+
             $return = null;
             foreach ($where_array as $where) {
                 if (count($where) > 1) {
                     $last = array_key_last($where);
-                    $operator = $where[$last];
+                    $custom_operator = $where[$last];
                     foreach ($where as $multiple) {
                         if (is_array($multiple)) {
-                            $return = $this->create_where_stmts($return, $row, $multiple, $operator);
+                            $return = $this->create_where_stmts($return, $row, $multiple, $custom_operator);
                         }
                     }
                 } else {
-                    $return = $this->create_where_stmts($return, $row, $where, $this->operator);
+                    $return = $this->create_where_stmts($return, $row, $where, $operator);
                 }
             }
             return $return;
