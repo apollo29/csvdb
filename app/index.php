@@ -108,7 +108,8 @@ row1,test2_1,value5
     //$csvdb->upsert($test,["index"=>7]);
     //$result = $csvdb->update(["header3"=>"***UPDATE***"],["header2"=>"test2_1"]);
     //$data = $csvdb->select()->where(["header1" => "row1"])->get(); //[["header1" => "row1"],["header3" => "value1"]]
-    $data = $csvdb->select()->where([["header1" => "row1"], ["header3" => "value3"], CSVDB::OR])->get();
+    //$data = $csvdb->select()->where([["header1" => "row1"], ["header3" => "value3"], CSVDB::OR])->get();
+    $data = $csvdb->getDatatypes();
     var_dump($data);
     //var_dump($result);
 

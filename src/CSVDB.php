@@ -4,6 +4,7 @@ namespace CSVDB;
 
 use CSVDB\Helpers\CSVConfig;
 use CSVDB\Helpers\CSVUtilities;
+use CSVDB\Helpers\DatatypeTrait;
 use CSVDB\Helpers\Str;
 use DateTime;
 use League\Csv\CannotInsertRecord;
@@ -16,6 +17,8 @@ use League\Csv\Writer;
 
 class CSVDB implements Builder\Statement
 {
+    use DatatypeTrait;
+
     public string $file;
     public string $document;
     public string $basedir;
