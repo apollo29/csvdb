@@ -913,4 +913,20 @@ class CSVDB implements Builder\Statement
         $key = key($data);
         return is_array($data[$key]);
     }
+
+    public function dump(string $data): void
+    {
+        // history
+        if ($this->config->history) {
+            $this->history();
+        }
+
+        // dump data to file - all data is overwritten
+        file_put_contents($this->file, $data);
+
+        // cache
+        if ($this->config->cache) {
+            $this->cache();
+        }
+    }
 }

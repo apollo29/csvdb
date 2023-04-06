@@ -24,7 +24,7 @@
 
     require '../vendor/autoload.php';
 
-    $csvdb = new CSVDB(__DIR__ . "/csv/phpunit.csv", new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, CSVConfig::HISTORY, false));
+    $csvdb = new CSVDB(__DIR__ . "/csv/phpunit.csv", new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, true, false));
 
     $records = [
         [1, 2, 3],
@@ -109,7 +109,18 @@ row1,test2_1,value5
     //$result = $csvdb->update(["header3"=>"***UPDATE***"],["header2"=>"test2_1"]);
     //$data = $csvdb->select()->where(["header1" => "row1"])->get(); //[["header1" => "row1"],["header3" => "value1"]]
     //$data = $csvdb->select()->where([["header1" => "row1"], ["header3" => "value3"], CSVDB::OR])->get();
-    $data = $csvdb->getDatatypes();
+    //$data = $csvdb->getDatatypes();
+    $data = $csvdb->select()->get();
+    var_dump($data);
+
+    $test2 = "test_string_1,test_string_2,test_string_3\n";
+    $test2 .= "test_string1_1,test_string_1_2,test_string_1_3\n";
+    $test2 .= "test_string2_1,test_string_2_2,test_string_2_3\n";
+    $test2 .= "test_string3_1,test_string_3_2,test_string_3_3\n";
+    $test2 .= "test_string4_1,test_string_4_2,test_string_4_3\n";
+    $csvdb->dump($test2);
+
+    $data = $csvdb->select()->get();
     var_dump($data);
     //var_dump($result);
 

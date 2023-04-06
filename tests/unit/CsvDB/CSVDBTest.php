@@ -243,12 +243,12 @@ class CSVDBTest extends TestCase
         $test1[] = $raw[1];
         $test1[] = $raw[2];
         $test1[] = $raw[3];
-        $data1 = $csvdb->select()->where(["header2" => ["test2_1","test2_2"]])->get();
+        $data1 = $csvdb->select()->where(["header2" => ["test2_1", "test2_2"]])->get();
         $this->assertEquals($test1, $data1);
 
         $test2 = array();
         $test2[] = $raw[4];
-        $data2 = $csvdb->select()->where(["header2" => [["test2_1","test2_2"],CSVDB::NEG]])->get();
+        $data2 = $csvdb->select()->where(["header2" => [["test2_1", "test2_2"], CSVDB::NEG]])->get();
         $this->assertEquals($test2, $data2);
     }
 
@@ -261,7 +261,7 @@ class CSVDBTest extends TestCase
         $test1 = array();
         $test1[] = $raw[0];
         $test1[] = $raw[2];
-        $data1 = $csvdb->select()->where([[["header1" => "row1"], ["header3" => "value3"], CSVDB::OR], ["header2"=>"test2_1"]])->get();
+        $data1 = $csvdb->select()->where([[["header1" => "row1"], ["header3" => "value3"], CSVDB::OR], ["header2" => "test2_1"]])->get();
         $this->assertEquals($test1, $data1);
 
         $test2 = array();
@@ -706,6 +706,27 @@ class CSVDBTest extends TestCase
 
         $this->expectExceptionMessage("Unique constraints are violated.");
         $csvdb->upsert($record2);
+    }
+
+    public function testDumpDefault()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($raw, $data1);
+
+        $test = "test_string_1,test_string_2,test_string_3\n";
+        $test .= "test_string1_1,test_string_1_2,test_string_1_3\n";
+        $test .= "test_string2_1,test_string_2_2,test_string_2_3\n";
+
+        $test2[] = ["test_string_1" => "test_string1_1", "test_string_2" => "test_string_1_2", "test_string_3" => "test_string_1_3"];
+        $test2[] = ["test_string_1" => "test_string2_1", "test_string_2" => "test_string_2_2", "test_string_3" => "test_string_2_3"];
+
+        $csvdb->dump($test);
+        $data2 = $csvdb->select()->get();
+        $this->assertEquals($test2, $data2);
     }
 
     // CONVERTER
