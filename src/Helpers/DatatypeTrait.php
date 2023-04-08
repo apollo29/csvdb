@@ -3,7 +3,7 @@
 namespace CSVDB\Helpers;
 
 
-use CSVDB\enums\DatatypeEnum;
+use CSVDB\Enums\DatatypeEnum;
 
 trait DatatypeTrait
 {

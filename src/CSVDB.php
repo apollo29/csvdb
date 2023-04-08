@@ -2,10 +2,14 @@
 
 namespace CSVDB;
 
+use CSVDB\Enums\IndexEnum;
+use CSVDB\Enums\SchemaEnum;
 use CSVDB\Helpers\CSVConfig;
 use CSVDB\Helpers\CSVUtilities;
 use CSVDB\Helpers\DatatypeTrait;
+use CSVDB\Helpers\Records;
 use CSVDB\Helpers\Str;
+use CSVDB\Schema\SchemaValidator;
 use DateTime;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
@@ -23,6 +27,7 @@ class CSVDB implements Builder\Statement
     public string $document;
     public string $basedir;
     public CSVConfig $config;
+    public ?SchemaValidator $schema;
     public string $index;
 
     private array $select = array();
@@ -169,7 +174,7 @@ class CSVDB implements Builder\Statement
     {
         if (count($this->constraints) > 0) {
             $constraints = array_values($this->constraints);
-            if ($this->has_multiple_records($data)) {
+            if (Records::has_multiple_records($data)) {
                 $check = true;
                 foreach ($data as $record) {
                     if (!$this->check_unique_constraints_record($record, $constraints)) {
@@ -292,13 +297,67 @@ class CSVDB implements Builder\Statement
         }
     }
 
+    // SCHEMA
+
+    /**
+     * @throws \Exception
+     */
+    public function schema(array $schema, bool $strict = false): void
+    {
+        $this->schema = new SchemaValidator($schema, $strict);
+        $indexes = $this->schema->indexes();
+        foreach ($indexes as $key => $index) {
+            if ($index[SchemaEnum::INDEX] === IndexEnum::AUTO_INCREMENT) {
+                $this->check_autoincrement($key);
+            } else if ($index[SchemaEnum::INDEX] === IndexEnum::UNIQUE) {
+                $this->check_constraint($key);
+            }
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function check_autoincrement(string $key): void
+    {
+        if (!$this->config->autoincrement) {
+            throw new \Exception("Schema inconsistency. AUTO_INCREMENT is set for Field $key, but AUTO_INCREMENT is not configured within Config.");
+        }
+        if ($this->index !== $key) {
+            throw new \Exception("Schema inconsistency. AUTO_INCREMENT is set for Field $key, but Index is set to " . $this->index);
+        }
+    }
+
+    private function check_constraint(string $key): void
+    {
+        if (!array_key_exists($key, $this->constraints)) {
+            $this->unique($key);
+        }
+    }
+
+    public function has_schema(): bool
+    {
+        return isset($this->schema);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function validate(array $record): bool
+    {
+        if (!$this->has_schema()) {
+            return true;
+        }
+        return $this->schema->validate($record);
+    }
+
     // CREATE
 
     /**
      * @param array $data
      * @return array
      * @throws CannotInsertRecord
-     * @throws Exception
+     * @throws \Exception
      * @throws InvalidArgument
      * @throws UnableToProcessCsv
      */
@@ -306,8 +365,10 @@ class CSVDB implements Builder\Statement
     {
         $writer = $this->writer();
 
-        $constraint = $this->check_unique_constraints($data);
-        if (!$constraint) {
+        if (!$this->validate($data)) {
+            throw new CannotInsertRecord("Schema is violated.");
+        }
+        if (!$this->check_unique_constraints($data)) {
             throw new CannotInsertRecord("Unique constraints are violated.");
         }
 
@@ -364,7 +425,7 @@ class CSVDB implements Builder\Statement
         }
 
         if ($this->has_headers($this->headers(), $data)) {
-            if ($this->has_multiple_records($data)) {
+            if (Records::has_multiple_records($data)) {
                 $records = array();
                 foreach ($data as $record) {
                     $records[] = $this->add_autoincrement_value(array_values($record));
@@ -522,8 +583,6 @@ class CSVDB implements Builder\Statement
             }
             return $return;
         }
-        var_dump(strpos($record, $value) !== false);
-        var_dump(Str::contains($record, $value));
         return Str::contains($record, $value);
     }
 
@@ -546,7 +605,7 @@ class CSVDB implements Builder\Statement
     {
         if (is_array($orderVal)) {
             $key = key($orderVal);
-            if ($this->has_multiple_records($orderVal)) {
+            if (Records::has_multiple_records($orderVal)) {
                 $order = [$orderVal[$key] => self::ASC];
             } else {
                 $key = key($orderVal);
@@ -663,12 +722,13 @@ class CSVDB implements Builder\Statement
         if (count($update) == 0) {
             throw new \Exception('Nothing to update.');
         }
-        if (isset($update[0])) {
+        if (!Records::is_assoc($update)) {
             throw new \Exception('Update is not an associative array.');
         }
-
-        $constraint = $this->check_unique_constraints_update($update, $where);
-        if (!$constraint) {
+        if (!$this->validate($update)) {
+            throw new CannotInsertRecord("Schema is violated.");
+        }
+        if (!$this->check_unique_constraints_update($update, $where)) {
             throw new \Exception("Unique constraints are violated.");
         }
 
@@ -700,7 +760,7 @@ class CSVDB implements Builder\Statement
         if (count($where) == 0) {
             return $this->update_stmt($record, $update);
         } else {
-            if ($this->has_multiple_records($where)) {
+            if (Records::has_multiple_records($where)) {
                 $complies = true;
                 foreach ($where as $check) {
                     if (!$this->check_update_stmt($record, $check)) {
@@ -745,7 +805,7 @@ class CSVDB implements Builder\Statement
     {
         if (count($update) == 0) {
             throw new \Exception('Nothing to update/insert.');
-        } elseif ($this->has_multiple_records($update)) {
+        } elseif (Records::has_multiple_records($update)) {
             throw new \Exception('Update/insert only one row.');
         }
 
@@ -824,7 +884,7 @@ class CSVDB implements Builder\Statement
      */
     private function delete_where_stmts(array $record, array $where): bool
     {
-        if ($this->has_multiple_records($where)) {
+        if (Records::has_multiple_records($where)) {
             $complies = false;
             foreach ($where as $check) {
                 if ($this->delete_where_stmt($record, $check)) {
@@ -886,7 +946,7 @@ class CSVDB implements Builder\Statement
     {
         $hasHeader = false;
         $record = $update;
-        if ($this->has_multiple_records($update)) {
+        if (Records::has_multiple_records($update)) {
             $key = key($update);
             $record = $update[$key];
         }
@@ -908,12 +968,10 @@ class CSVDB implements Builder\Statement
         return $headers[$this->config->index];
     }
 
-    private function has_multiple_records($data): bool
-    {
-        $key = key($data);
-        return is_array($data[$key]);
-    }
-
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
     public function dump(string $data): void
     {
         // history

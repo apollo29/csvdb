@@ -5,7 +5,7 @@ namespace CSVDB\Enums;
 class DatatypeEnum extends AbstractEnum
 {
 
-    const __DEFAULT = self::TYPE_STRING;
+    private static string $__DEFAULT = self::TYPE_STRING;
 
     const TYPE_STRING = 'string';
 
@@ -17,11 +17,11 @@ class DatatypeEnum extends AbstractEnum
 
     const TYPE_DATE = 'date';
 
-    const REGEX_FLOAT = '/(^[+-]?$)|(^[+-]?[0-9]+([,.][0-9])?[0-9]*(e[+-]?[0-9]+)?$)/';
+    private static string $REGEX_FLOAT = '/(^[+-]?$)|(^[+-]?[0-9]+([,.][0-9])?[0-9]*(e[+-]?[0-9]+)?$)/';
 
-    const REGEX_INT = '/^[-+]?[0-9]\d*$/';
+    private static string $REGEX_INT = '/^[-+]?[0-9]\d*$/';
 
-    const REGEX_BOOL = '/^(?i:true|false)$/';
+    private static string $REGEX_BOOL = '/^(?i:true|false)$/';
 
     /**
      * Define validator functions here.
@@ -66,7 +66,7 @@ class DatatypeEnum extends AbstractEnum
             }
         }
 
-        return self::__DEFAULT;
+        return self::$__DEFAULT;
     }
 
     /**
@@ -78,7 +78,7 @@ class DatatypeEnum extends AbstractEnum
      */
     private static function isValidFloat(string $value): bool
     {
-        return (bool)preg_match(self::REGEX_FLOAT, $value);
+        return (bool)preg_match(self::$REGEX_FLOAT, $value);
     }
 
     /**
@@ -90,7 +90,7 @@ class DatatypeEnum extends AbstractEnum
      */
     private static function isValidInteger(string $value): bool
     {
-        return (bool)preg_match(self::REGEX_INT, $value);
+        return (bool)preg_match(self::$REGEX_INT, $value);
     }
 
     /**
@@ -105,7 +105,7 @@ class DatatypeEnum extends AbstractEnum
         if ($value === "x") {
             return true;
         }
-        return (bool)preg_match(self::REGEX_BOOL, $value);
+        return (bool)preg_match(self::$REGEX_BOOL, $value);
     }
 
     /**
