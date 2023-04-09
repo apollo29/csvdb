@@ -77,69 +77,72 @@ class SchemaValidator
     public function validate(array $record): bool
     {
         if (Records::has_multiple_records($record)) {
-            $valid = true;
             foreach ($record as $data) {
-                if (!$this->validate($data)) {
-                    $valid = false;
-                }
+                $this->validate($data);
             }
-            return $valid;
         } else {
-            return $this->validate_record($record);
+            $this->validate_record($record);
+        }
+        return true;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function validate_record(array $record): void
+    {
+        if (!Records::is_assoc($record) && $this->strict) {
+            throw new \Exception("Schema Validation is strict, non associative Records are not allowed.");
+        } else if (!Records::is_assoc($record)) {
+            $this->validate_simple_record($record);
+        }
+
+        // todo what when no type? what when no schema?? exception??
+
+        foreach ($record as $key => $value) {
+            if (array_key_exists($key, $this->schema)) {
+                // type
+                if (!empty($value)) {
+                    $type = $this->schema[$key][SchemaEnum::TYPE];
+                    $value_type = DatatypeEnum::getValidTypeFromSample($value);
+                    if (is_string($value_type)) {
+                        if ($value_type !== $type) {
+                            throw new \Exception("Schema is violated: Expected Type $type, but Type is $value_type");
+                        }
+                    }
+                }
+
+                if (array_key_exists(SchemaEnum::CONSTRAINT, $this->schema[$key])) {
+                    if (empty($value)) {
+                        throw new \Exception("Schema is violated: Value is empty, but has Constraint: " . json_encode($this->schema[$key][SchemaEnum::CONSTRAINT]));
+                    }
+                }
+            } else if ($this->strict) {
+                throw new \Exception("Schema is violated: Schema is string and expects Field $key, but Field is not provided");
+            }
         }
     }
 
     /**
      * @throws \Exception
      */
-    private function validate_record(array $record): bool
+    private function validate_simple_record(array $record): void
     {
-        if (!Records::is_assoc($record) && $this->strict) {
-            throw new \Exception("Schema Validation is strict, non associative Records are not allowed.");
-        } else if (!Records::is_assoc($record)) {
-            return $this->validate_simple_record($record);
-        }
-
-        // todo what when no type? what when no schema?? exception??
-        $valid = true;
-        foreach ($record as $key => $value) {
-            if (array_key_exists($key, $this->schema)) {
-                // type
-                $type = $this->schema[$key]["type"];
-                $value_type = DatatypeEnum::getValidTypeFromSample($value);
-                if (is_string($value_type)) {
-                    if ($value_type !== $type) {
-                        $valid = false;
-                    }
-                }
-
-                // todo constraint
-            } else if ($this->strict) {
-                return false;
-            }
-        }
-        return $valid;
-    }
-
-    private function validate_simple_record(array $record): bool
-    {
-        $valid = true;
         $schema = array_values($this->schema);
         for ($i = 0; $i < count($record); $i++) {
             $type = $schema[$i]["type"];
             $value_type = DatatypeEnum::getValidTypeFromSample($record[$i]);
             if (is_string($value_type)) {
                 if ($value_type !== $type) {
-                    $valid = false;
+                    throw new \Exception("Schema is violated: Expected Type $type, but Type is $value_type");
                 }
             }
         }
-        return $valid;
     }
 
-    // INDEX
+    // CONSTAINT
 
-    public function indexes(): array
+    public function constraints(): array
     {
         return array_filter($this->schema, function ($value) {
             return array_key_exists(SchemaEnum::CONSTRAINT, $value);

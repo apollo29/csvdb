@@ -305,11 +305,13 @@ class CSVDB implements Builder\Statement
     public function schema(array $schema, bool $strict = false): void
     {
         $this->schema = new SchemaValidator($schema, $strict);
-        $indexes = $this->schema->indexes();
-        foreach ($indexes as $key => $index) {
-            if ($index[SchemaEnum::CONSTRAINT] === ConstraintEnum::AUTO_INCREMENT) {
+        $constraints = $this->schema->constraints();
+        foreach ($constraints as $key => $constraint) {
+            if ($constraint[SchemaEnum::CONSTRAINT] === ConstraintEnum::AUTO_INCREMENT) {
                 $this->check_autoincrement($key);
-            } else if ($index[SchemaEnum::CONSTRAINT] === ConstraintEnum::UNIQUE) {
+            } else if ($constraint[SchemaEnum::CONSTRAINT] === ConstraintEnum::PRIMARY_KEY) {
+                $this->check_primarykey($key);
+            } else if ($constraint[SchemaEnum::CONSTRAINT] === ConstraintEnum::UNIQUE) {
                 $this->check_constraint($key);
             }
         }
@@ -328,6 +330,16 @@ class CSVDB implements Builder\Statement
         }
     }
 
+    /**
+     * @throws \Exception
+     */
+    private function check_primarykey(string $key): void
+    {
+        if ($this->index !== $key) {
+            throw new \Exception("Schema inconsistency. PRIMARY_KEY is set for Field $key, but Index is set to " . $this->index);
+        }
+    }
+
     private function check_constraint(string $key): void
     {
         if (!array_key_exists($key, $this->constraints)) {
@@ -343,12 +355,11 @@ class CSVDB implements Builder\Statement
     /**
      * @throws \Exception
      */
-    private function validate(array $record): bool
+    private function validate(array $record): void
     {
-        if (!$this->has_schema()) {
-            return true;
+        if ($this->has_schema()) {
+            $this->schema->validate($record);
         }
-        return $this->schema->validate($record);
     }
 
     // CREATE
@@ -365,9 +376,8 @@ class CSVDB implements Builder\Statement
     {
         $writer = $this->writer();
 
-        if (!$this->validate($data)) {
-            throw new CannotInsertRecord("Schema is violated.");
-        }
+        $this->validate($data);
+
         if (!$this->check_unique_constraints($data)) {
             throw new CannotInsertRecord("Unique constraints are violated.");
         }
@@ -725,9 +735,8 @@ class CSVDB implements Builder\Statement
         if (!Records::is_assoc($update)) {
             throw new \Exception('Update is not an associative array.');
         }
-        if (!$this->validate($update)) {
-            throw new CannotInsertRecord("Schema is violated.");
-        }
+
+        $this->validate($update);
         if (!$this->check_unique_constraints_update($update, $where)) {
             throw new \Exception("Unique constraints are violated.");
         }

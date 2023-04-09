@@ -137,7 +137,7 @@ row1,test2_1,value5
         )
     );
     $csvdb->schema($schema);
-    var_dump($csvdb->schema->indexes());
+    var_dump($csvdb->schema->constraints());
     ?>
 </pre>
 

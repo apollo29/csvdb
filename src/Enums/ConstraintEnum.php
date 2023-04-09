@@ -10,5 +10,5 @@ class ConstraintEnum extends AbstractEnum
 
     const UNIQUE = "unique";
 
-    const NULLABLE = "nullable";
+    const NOT_NULL = "not_null";
 }
