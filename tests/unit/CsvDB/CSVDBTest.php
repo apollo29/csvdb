@@ -319,11 +319,51 @@ class CSVDBTest extends TestCase
         $data2 = $csvdb->select()->where(["header2" => ["test2", CSVDB::LIKE]])->get();
         $this->assertEquals($raw, $data2);
 
-        $test3 = array();
-        $test3[] = $raw[3];
-        $test3[] = $raw[4];
-        $data3 = $csvdb->select()->where(["header2" => ["test2_1", CSVDB::NEG]])->get();
-        $this->assertEquals($test3, $data3);
+        $data3 = $csvdb->select()->where(["header2" => ["%test2%", CSVDB::LIKE]])->get();
+        $this->assertEquals($raw, $data3);
+
+        $test4 = array();
+        $test4[] = $raw[3];
+        $test4[] = $raw[4];
+        $data4 = $csvdb->select()->where(["header2" => ["test2_1", CSVDB::NEG]])->get();
+        $this->assertEquals($test4, $data4);
+
+        $test5 = array();
+        $test5[] = $raw[0];
+        $test5[] = $raw[1];
+        $test5[] = $raw[2];
+        $data5 = $csvdb->select()->where(["header2" => ["2_1%", CSVDB::LIKE]])->get();
+        $this->assertEquals($test5, $data5);
+    }
+
+    public function testSelectDefaultWhereLikeWithPattern()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $like_raw = [];
+        $like_raw[] = [$this->header[0] => "x_row6", $this->header[1] => "other2_1", $this->header[2] => "value6"];
+        $like_raw[] = [$this->header[0] => "x_row7", $this->header[1] => "other2_1", $this->header[2] => "value7"];
+        $csvdb->insert($like_raw);
+
+        $data1 = $csvdb->select()->where(["header2" => ["%test2%", CSVDB::LIKE]])->get();
+        $this->assertEquals($raw, $data1);
+
+        $test2 = array();
+        $test2[] = $raw[0];
+        $test2[] = $raw[1];
+        $test2[] = $raw[2];
+        $test2[] = $like_raw[0];
+        $test2[] = $like_raw[1];
+        $data2 = $csvdb->select()->where(["header2" => ["2_1%", CSVDB::LIKE]])->get();
+        $this->assertEquals($test2, $data2);
+
+        $data3 = $csvdb->select()->where(["header2" => ["%other", CSVDB::LIKE]])->get();
+        $this->assertEquals($like_raw, $data3);
+
+        $data3 = $csvdb->select()->where(["header1" => ["%x", CSVDB::LIKE]])->get();
+        $this->assertEquals($like_raw, $data3);
     }
 
     public function testSelectCustomWhere()
