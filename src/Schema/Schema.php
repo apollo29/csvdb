@@ -7,7 +7,7 @@ use CSVDB\Enums\DatatypeEnum;
 use CSVDB\Enums\SchemaEnum;
 use CSVDB\Helpers\Records;
 
-class SchemaValidator
+class Schema
 {
     public array $schema;
     public bool $strict;

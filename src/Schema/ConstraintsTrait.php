@@ -1,6 +1,6 @@
 <?php
 
-namespace CSVDB\Constraints;
+namespace CSVDB\Schema;
 
 use CSVDB\CSVDB;
 use CSVDB\Helpers\Records;

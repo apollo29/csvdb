@@ -7,15 +7,15 @@ use CSVDB\Builder\DeleteTrait;
 use CSVDB\Builder\ReadTrait;
 use CSVDB\Builder\UpdateTrait;
 use CSVDB\Cache\CacheTrait;
-use CSVDB\Constraints\ConstraintsTrait;
 use CSVDB\Helpers\CSVConfig;
 use CSVDB\Helpers\CSVUtilities;
 use CSVDB\Helpers\DatatypeTrait;
 use CSVDB\Helpers\Records;
 use CSVDB\History\HistoryTrait;
+use CSVDB\Schema\ConstraintsTrait;
+use CSVDB\Schema\DefaultTrait;
+use CSVDB\Schema\Schema;
 use CSVDB\Schema\SchemaTrait;
-use CSVDB\Schema\SchemaValidator;
-use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
@@ -26,7 +26,6 @@ class CSVDB implements Builder\Statement
 {
     use CacheTrait;
     use HistoryTrait;
-    use ConstraintsTrait;
 
     use CreateTrait;
     use ReadTrait;
@@ -34,13 +33,15 @@ class CSVDB implements Builder\Statement
     use DeleteTrait;
 
     use SchemaTrait;
+    use ConstraintsTrait;
+    use DefaultTrait;
     use DatatypeTrait;
 
     public string $file;
     public string $document;
     public string $basedir;
     public CSVConfig $config;
-    public ?SchemaValidator $schema;
+    public ?Schema $schema;
     public string $index;
 
     private array $select = array();

@@ -13,7 +13,7 @@ trait SchemaTrait
      */
     public function schema(array $schema, bool $strict = false): void
     {
-        $this->schema = new SchemaValidator($schema, $strict);
+        $this->schema = new Schema($schema, $strict);
         $constraints = $this->schema->constraints();
         foreach ($constraints as $key => $constraint) {
             if ($constraint[SchemaEnum::CONSTRAINT] === ConstraintEnum::AUTO_INCREMENT) {
