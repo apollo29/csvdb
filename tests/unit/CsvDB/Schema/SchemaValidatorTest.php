@@ -154,14 +154,24 @@ class SchemaValidatorTest extends TestCase
 
         $valid3 = $csvdb->schema->validate([$this->data[0][0], $this->data[0][1], $this->data[0][2]]);
         $this->assertTrue($valid3);
+    }
 
-        // todo
-        //$valid4 = $csvdb->schema->validate([5, "test2_1", "row1"]);
-        //$this->assertFalse($valid4);
+    public function testValidateNonAssocException()
+    {
+        $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
+        $csvdb->schema(self::$schema);
 
-        // todo
-        //$valid5 = $csvdb->schema->validate([[5, "test2_1", "row1"], [4, "test2_2", "row2"], ["test", "test2_3", "row3"]]);
-        //$this->assertFalse($valid5);
+        $this->expectExceptionMessage("Schema is violated: Expected Type string, but Type is integer");
+        $csvdb->schema->validate([5, "test2_1", "row1"]);
+    }
+
+    public function testValidateException()
+    {
+        $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
+        $csvdb->schema(self::$schema);
+
+        $this->expectExceptionMessage("Schema is violated: Expected Type string, but Type is integer");
+        $csvdb->schema->validate([[5, "test2_1", "row1"], [4, "test2_2", "row2"], ["test", "test2_3", "row3"]]);
     }
 
     public function testValidateStrict()

@@ -110,7 +110,6 @@ class SchemaValidator
             }
         }
 
-        // todo what when no type? what when no schema?? exception??
         foreach ($record as $key => $value) {
             if (array_key_exists($key, $this->schema)) {
                 // type
