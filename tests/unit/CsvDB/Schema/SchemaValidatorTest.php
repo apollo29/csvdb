@@ -18,7 +18,7 @@ class SchemaValidatorTest extends TestCase
         array('row4', 'test2_2', 2),
         array('row5', 'test2_3', 1)
     );
-    public static array $schema = array(
+    protected array $schema = array(
         'header1' => array(
             "type" => "string",
             "constraint" => "unique"
@@ -59,7 +59,7 @@ class SchemaValidatorTest extends TestCase
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
         $this->assertFalse($csvdb->has_schema());
 
-        $csvdb->schema(self::$schema);
+        $csvdb->schema($this->schema);
         $this->assertTrue($csvdb->has_schema());
     }
 
@@ -144,7 +144,7 @@ class SchemaValidatorTest extends TestCase
     {
         $raw = $this->prepareDefaultData();
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema);
+        $csvdb->schema($this->schema);
 
         $valid1 = $csvdb->schema->validate($raw[0]);
         $this->assertTrue($valid1);
@@ -159,7 +159,7 @@ class SchemaValidatorTest extends TestCase
     public function testValidateNonAssocException()
     {
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema);
+        $csvdb->schema($this->schema);
 
         $this->expectExceptionMessage("Schema is violated: Expected Type string, but Type is integer");
         $csvdb->schema->validate([5, "test2_1", "row1"]);
@@ -168,7 +168,7 @@ class SchemaValidatorTest extends TestCase
     public function testValidateException()
     {
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema);
+        $csvdb->schema($this->schema);
 
         $this->expectExceptionMessage("Schema is violated: Expected Type string, but Type is integer");
         $csvdb->schema->validate([[5, "test2_1", "row1"], [4, "test2_2", "row2"], ["test", "test2_3", "row3"]]);
@@ -178,7 +178,7 @@ class SchemaValidatorTest extends TestCase
     {
         $raw = $this->prepareDefaultData();
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema, true);
+        $csvdb->schema($this->schema, true);
 
         $valid1 = $csvdb->schema->validate($raw[0]);
         $this->assertTrue($valid1);
@@ -206,7 +206,7 @@ class SchemaValidatorTest extends TestCase
         $raw[] = [$this->header[0] => "row12", $this->header[1] => $this->data[4][1], $this->header[2] => 12];
 
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema);
+        $csvdb->schema($this->schema);
 
         $test1_record = [$this->header[0] => "row9", $this->header[1] => $this->data[2][1], $this->header[2] => 9];
         $test1 = $csvdb->insert($test1_record);
@@ -245,7 +245,7 @@ class SchemaValidatorTest extends TestCase
         $raw[] = [$this->header[0] => "row12", $this->header[1] => $this->data[4][1], $this->header[2] => 12];
 
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema, true);
+        $csvdb->schema($this->schema, true);
 
         $test1_record = [$this->header[0] => "row9", $this->header[1] => $this->data[2][1], $this->header[2] => 9];
         $test1 = $csvdb->insert($test1_record);
@@ -267,7 +267,7 @@ class SchemaValidatorTest extends TestCase
         $raw[] = [$this->header[0] => "row12", $this->header[1] => $this->data[4][1], $this->header[2] => 12];
 
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema, true);
+        $csvdb->schema($this->schema, true);
 
         $test3_record = [$this->header[0] => "row20", $this->header[1] => $this->data[2][1]];
         $this->expectExceptionMessage('Schema Validation is strict. Field(s) ["header3"] in Record is/are missing.');
@@ -282,7 +282,7 @@ class SchemaValidatorTest extends TestCase
         $raw[] = [$this->header[0] => "row12", $this->header[1] => $this->data[4][1], $this->header[2] => 12];
 
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema, true);
+        $csvdb->schema($this->schema, true);
 
         $test1_record = array_values($raw[0]);
         $this->expectExceptionMessage("Schema Validation is strict, non associative Records are not allowed.");
@@ -339,7 +339,7 @@ class SchemaValidatorTest extends TestCase
     {
         $raw = $this->prepareDefaultData();
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema);
+        $csvdb->schema($this->schema);
 
         $test1 = $raw;
         $test1[0]["header2"] = "update";
@@ -355,7 +355,7 @@ class SchemaValidatorTest extends TestCase
     {
         $raw = $this->prepareDefaultData();
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema, true);
+        $csvdb->schema($this->schema, true);
 
         $test1 = $raw;
         $test1[0]["header2"] = "update";
@@ -370,7 +370,7 @@ class SchemaValidatorTest extends TestCase
     public function testValidateUpdateException()
     {
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
-        $csvdb->schema(self::$schema);
+        $csvdb->schema($this->schema);
 
         $this->expectExceptionMessage("Schema is violated: Expected Type string, but Type is integer");
         $csvdb->update(["header2" => 5], ["header2" => "test2_1"]);

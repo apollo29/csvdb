@@ -322,12 +322,14 @@ class CSVDB implements Builder\Statement
      */
     private function check_autoincrement(string $key): void
     {
+        // todo add autoincrement to config?!
         if (!$this->config->autoincrement) {
             throw new \Exception("Schema inconsistency. AUTO_INCREMENT is set for Field $key, but AUTO_INCREMENT is not configured within Config.");
         }
         if ($this->index !== $key) {
             throw new \Exception("Schema inconsistency. AUTO_INCREMENT is set for Field $key, but Index is set to " . $this->index);
         }
+        $this->check_constraint($key);
     }
 
     /**
@@ -338,6 +340,7 @@ class CSVDB implements Builder\Statement
         if ($this->index !== $key) {
             throw new \Exception("Schema inconsistency. PRIMARY_KEY is set for Field $key, but Index is set to " . $this->index);
         }
+        $this->check_constraint($key);
     }
 
     private function check_constraint(string $key): void

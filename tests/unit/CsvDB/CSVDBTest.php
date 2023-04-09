@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace CSVDB;
 
 use CSVDB\Helpers\CSVConfig;
-use CSVDB\Schema\SchemaValidator;
-use CSVDB\Schema\SchemaValidatorTest;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
@@ -733,14 +731,152 @@ class CSVDBTest extends TestCase
 
     // SCHEMA
 
-    // todo autoincrement and constraints
-    public function testSchemaDefault()
+    public function testSchemaAutoIncrement()
+    {
+        $file = vfsStream::url("assets/" . $this->filename_auto);
+        $csvdb = new CSVDB($file, new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, CSVConfig::HISTORY, true));
+        $this->assertFalse($csvdb->has_schema());
+        $schema = array(
+            'index' => array(
+                "type" => "integer",
+                "constraint" => "auto_increment"
+            ),
+            'header1' => array(
+                "type" => "string"
+            ),
+            'header2' => array(
+                "type" => "string"
+            ),
+            'header3' => array(
+                "type" => "string"
+            )
+        );
+        $csvdb->schema($schema);
+        $this->assertTrue($csvdb->has_schema());
+
+        $this->assertEquals($csvdb->index, "index");
+    }
+
+    public function testSchemaAutoIncrementException()
+    {
+        $file = vfsStream::url("assets/" . $this->filename_auto);
+        $csvdb = new CSVDB($file, new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, CSVConfig::HISTORY, true));
+        $this->assertFalse($csvdb->has_schema());
+        $schema = array(
+            'index' => array(
+                "type" => "integer"
+            ),
+            'header1' => array(
+                "type" => "string",
+                "constraint" => "auto_increment"
+            ),
+            'header2' => array(
+                "type" => "string"
+            ),
+            'header3' => array(
+                "type" => "string"
+            )
+        );
+        $this->expectExceptionMessage("Schema inconsistency. AUTO_INCREMENT is set for Field header1, but Index is set to index");
+        $csvdb->schema($schema);
+    }
+
+    public function testSchemaAutoIncrementNoneException()
     {
         $file = vfsStream::url("assets/" . $this->filename);
         $csvdb = new CSVDB($file);
         $this->assertFalse($csvdb->has_schema());
-        $csvdb->schema(SchemaValidatorTest::$schema);
+        $schema = array(
+            'header1' => array(
+                "type" => "string",
+                "constraint" => "auto_increment"
+            ),
+            'header2' => array(
+                "type" => "string"
+            ),
+            'header3' => array(
+                "type" => "string"
+            )
+        );
+        $this->expectExceptionMessage("Schema inconsistency. AUTO_INCREMENT is set for Field header1, but AUTO_INCREMENT is not configured within Config.");
+        $csvdb->schema($schema);
+    }
+
+    public function testSchemaPrimaryKey()
+    {
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+        $this->assertFalse($csvdb->has_schema());
+        $schema = array(
+            'header1' => array(
+                "type" => "string",
+                "constraint" => "primary_key"
+            ),
+            'header2' => array(
+                "type" => "string"
+            ),
+            'header3' => array(
+                "type" => "string"
+            )
+        );
+        $csvdb->schema($schema);
         $this->assertTrue($csvdb->has_schema());
+
+        $this->assertEquals($csvdb->index, "header1");
+    }
+
+    public function testSchemaPrimaryKeyException()
+    {
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+        $this->assertFalse($csvdb->has_schema());
+        $schema = array(
+            'header1' => array(
+                "type" => "string"
+            ),
+            'header2' => array(
+                "type" => "string"
+            ),
+            'header3' => array(
+                "type" => "string",
+                "constraint" => "primary_key"
+            )
+        );
+        $this->expectExceptionMessage("Schema inconsistency. PRIMARY_KEY is set for Field header3, but Index is set to header1");
+        $csvdb->schema($schema);
+    }
+
+    public function testSchemaUnique()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+        $this->assertFalse($csvdb->has_schema());
+        $schema = array(
+            'header1' => array(
+                "type" => "string"
+            ),
+            'header2' => array(
+                "type" => "string"
+            ),
+            'header3' => array(
+                "type" => "string",
+                "constraint" => "unique"
+            )
+        );
+        $csvdb->schema($schema);
+        $this->assertTrue($csvdb->has_schema());
+
+        $test1 = $raw;
+        $test1[0]["header2"] = "update";
+        $test1[1]["header2"] = "update";
+        $test1[2]["header2"] = "update";
+        $csvdb->update(["header2" => "update"], ["header2" => "test2_1"]);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+
+        $this->expectExceptionMessage("Unique constraints are violated.");
+        $csvdb->update(["header3" => "value1"], ["header1" => "row1"]);
     }
 
     // CONVERTER
