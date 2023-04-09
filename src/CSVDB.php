@@ -322,7 +322,6 @@ class CSVDB implements Builder\Statement
      */
     private function check_autoincrement(string $key): void
     {
-        // todo add autoincrement to config?!
         if (!$this->config->autoincrement) {
             throw new \Exception("Schema inconsistency. AUTO_INCREMENT is set for Field $key, but AUTO_INCREMENT is not configured within Config.");
         }
