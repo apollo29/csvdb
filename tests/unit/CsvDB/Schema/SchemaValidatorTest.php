@@ -244,10 +244,39 @@ class SchemaValidatorTest extends TestCase
         $test2 = $csvdb->insert($raw);
         $this->assertEquals($raw, $test2);
 
-        $test3_record = array_values($raw[0]);
-
-        $this->expectExceptionMessage("Schema Validation is strict, non associative Records are not allowed.");
+        $test3_record = [$this->header[0] => "row20", $this->header[1] => $this->data[4][1], $this->header[1] => $this->data[2][1], "header4" => "test"];
+        $this->expectExceptionMessage('Schema Validation is strict. Field(s) ["header3"] in Record is/are missing.');
         $csvdb->insert($test3_record);
+    }
+
+    public function testValidateInsertStrictMissing()
+    {
+        $raw = [];
+        $raw[] = [$this->header[0] => "row10", $this->header[1] => $this->data[2][1], $this->header[2] => 10];
+        $raw[] = [$this->header[0] => "row11", $this->header[1] => $this->data[3][1], $this->header[2] => 11];
+        $raw[] = [$this->header[0] => "row12", $this->header[1] => $this->data[4][1], $this->header[2] => 12];
+
+        $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
+        $csvdb->schema(self::$schema, true);
+
+        $test3_record = [$this->header[0] => "row20", $this->header[1] => $this->data[2][1]];
+        $this->expectExceptionMessage('Schema Validation is strict. Field(s) ["header3"] in Record is/are missing.');
+        $csvdb->insert($test3_record);
+    }
+
+    public function testValidateInsertStrictNonAssoc()
+    {
+        $raw = [];
+        $raw[] = [$this->header[0] => "row10", $this->header[1] => $this->data[2][1], $this->header[2] => 10];
+        $raw[] = [$this->header[0] => "row11", $this->header[1] => $this->data[3][1], $this->header[2] => 11];
+        $raw[] = [$this->header[0] => "row12", $this->header[1] => $this->data[4][1], $this->header[2] => 12];
+
+        $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
+        $csvdb->schema(self::$schema, true);
+
+        $test1_record = array_values($raw[0]);
+        $this->expectExceptionMessage("Schema Validation is strict, non associative Records are not allowed.");
+        $csvdb->insert($test1_record);
     }
 
     public function testValidateInsertNotNull()

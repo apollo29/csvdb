@@ -74,14 +74,14 @@ class SchemaValidator
     /**
      * @throws \Exception
      */
-    public function validate(array $record): bool
+    public function validate(array $record, bool $update = false): bool
     {
         if (Records::has_multiple_records($record)) {
             foreach ($record as $data) {
-                $this->validate($data);
+                $this->validate($data, $update);
             }
         } else {
-            $this->validate_record($record);
+            $this->validate_record($record, $update);
         }
         return true;
     }
@@ -89,7 +89,7 @@ class SchemaValidator
     /**
      * @throws \Exception
      */
-    private function validate_record(array $record): void
+    private function validate_record(array $record, bool $update = false): void
     {
         if (!Records::is_assoc($record) && $this->strict) {
             throw new \Exception("Schema Validation is strict, non associative Records are not allowed.");
@@ -97,8 +97,20 @@ class SchemaValidator
             $this->validate_simple_record($record);
         }
 
-        // todo what when no type? what when no schema?? exception??
+        if ($this->strict) {
+            $schema_keys = array_keys($this->schema);
+            $record_keys = array_keys($record);
+            $diff_schema = array_diff($schema_keys, $record_keys);
+            $diff_record = array_diff($record_keys, $schema_keys);
+            if (count($diff_schema) !== 0 && !$update) {
+                throw new \Exception("Schema Validation is strict. Field(s) " . json_encode(array_values($diff_schema)) . " in Record is/are missing.");
+            }
+            if (count($diff_record) !== 0) {
+                throw new \Exception("Schema Validation is strict. Field(s) " . json_encode(array_values($diff_record)) . " in Record is/are missing in schema.");
+            }
+        }
 
+        // todo what when no type? what when no schema?? exception??
         foreach ($record as $key => $value) {
             if (array_key_exists($key, $this->schema)) {
                 // type
@@ -117,8 +129,6 @@ class SchemaValidator
                         throw new \Exception("Schema is violated: Value is empty, but has Constraint: " . json_encode($this->schema[$key][SchemaEnum::CONSTRAINT]));
                     }
                 }
-            } else if ($this->strict) {
-                throw new \Exception("Schema is violated: Schema is string and expects Field $key, but Field is not provided");
             }
         }
     }

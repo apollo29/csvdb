@@ -733,7 +733,7 @@ class CSVDBTest extends TestCase
 
     // SCHEMA
 
-    // todo auto incrmeent and constraints
+    // todo autoincrement and constraints
     public function testSchemaDefault()
     {
         $file = vfsStream::url("assets/" . $this->filename);

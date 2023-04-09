@@ -355,10 +355,10 @@ class CSVDB implements Builder\Statement
     /**
      * @throws \Exception
      */
-    private function validate(array $record): void
+    private function validate(array $record, bool $update = false): void
     {
         if ($this->has_schema()) {
-            $this->schema->validate($record);
+            $this->schema->validate($record, $update);
         }
     }
 
@@ -736,7 +736,7 @@ class CSVDB implements Builder\Statement
             throw new \Exception('Update is not an associative array.');
         }
 
-        $this->validate($update);
+        $this->validate($update, true);
         if (!$this->check_unique_constraints_update($update, $where)) {
             throw new \Exception("Unique constraints are violated.");
         }
