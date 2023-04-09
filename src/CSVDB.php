@@ -2,7 +2,7 @@
 
 namespace CSVDB;
 
-use CSVDB\Enums\IndexEnum;
+use CSVDB\Enums\ConstraintEnum;
 use CSVDB\Enums\SchemaEnum;
 use CSVDB\Helpers\CSVConfig;
 use CSVDB\Helpers\CSVUtilities;
@@ -307,9 +307,9 @@ class CSVDB implements Builder\Statement
         $this->schema = new SchemaValidator($schema, $strict);
         $indexes = $this->schema->indexes();
         foreach ($indexes as $key => $index) {
-            if ($index[SchemaEnum::INDEX] === IndexEnum::AUTO_INCREMENT) {
+            if ($index[SchemaEnum::CONSTRAINT] === ConstraintEnum::AUTO_INCREMENT) {
                 $this->check_autoincrement($key);
-            } else if ($index[SchemaEnum::INDEX] === IndexEnum::UNIQUE) {
+            } else if ($index[SchemaEnum::CONSTRAINT] === ConstraintEnum::UNIQUE) {
                 $this->check_constraint($key);
             }
         }

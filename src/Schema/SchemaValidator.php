@@ -2,8 +2,8 @@
 
 namespace CSVDB\Schema;
 
+use CSVDB\Enums\ConstraintEnum;
 use CSVDB\Enums\DatatypeEnum;
-use CSVDB\Enums\IndexEnum;
 use CSVDB\Enums\SchemaEnum;
 use CSVDB\Helpers\Records;
 
@@ -43,14 +43,32 @@ class SchemaValidator
                 throw new \Exception("Schema is not valid. Type missing for $field: " . json_encode($model));
             }
 
-            if (array_key_exists(SchemaEnum::INDEX, $model)) {
-                $valid = IndexEnum::isValid($model[SchemaEnum::INDEX]);
-                if (!$valid) {
-                    throw new \Exception("Schema is not valid. Wrong Index for $field: " . json_encode($model));
+            if (array_key_exists(SchemaEnum::CONSTRAINT, $model)) {
+                if (is_string($model[SchemaEnum::CONSTRAINT])) {
+                    $this->validate_constraint($field, $model[SchemaEnum::CONSTRAINT]);
+                } elseif (is_array($model[SchemaEnum::CONSTRAINT])) {
+                    foreach ($model[SchemaEnum::CONSTRAINT] as $constraint) {
+                        $this->validate_constraint($field, $constraint);
+                    }
                 }
             }
         }
         return $schema;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function validate_constraint(string $field, string $constraint): void
+    {
+        try {
+            $valid = ConstraintEnum::isValid($constraint);
+            if (!$valid) {
+                throw new \Exception("Schema is not valid. Wrong Constraint for $field: " . $constraint);
+            }
+        } catch (\ReflectionException $e) {
+            throw new \Exception("Schema is not valid. Wrong Constraint for $field: " . $constraint);
+        }
     }
 
     /**
@@ -86,6 +104,7 @@ class SchemaValidator
         $valid = true;
         foreach ($record as $key => $value) {
             if (array_key_exists($key, $this->schema)) {
+                // type
                 $type = $this->schema[$key]["type"];
                 $value_type = DatatypeEnum::getValidTypeFromSample($value);
                 if (is_string($value_type)) {
@@ -93,6 +112,8 @@ class SchemaValidator
                         $valid = false;
                     }
                 }
+
+                // todo constraint
             } else if ($this->strict) {
                 return false;
             }
@@ -121,7 +142,7 @@ class SchemaValidator
     public function indexes(): array
     {
         return array_filter($this->schema, function ($value) {
-            return array_key_exists(SchemaEnum::INDEX, $value);
+            return array_key_exists(SchemaEnum::CONSTRAINT, $value);
         });
     }
 }

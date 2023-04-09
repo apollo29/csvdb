@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace CSVDB;
 
 use CSVDB\Helpers\CSVConfig;
+use CSVDB\Schema\SchemaValidator;
+use CSVDB\Schema\SchemaValidatorTest;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
@@ -727,6 +729,18 @@ class CSVDBTest extends TestCase
         $csvdb->dump($test);
         $data2 = $csvdb->select()->get();
         $this->assertEquals($test2, $data2);
+    }
+
+    // SCHEMA
+
+    // todo auto incrmeent and constraints
+    public function testSchemaDefault()
+    {
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+        $this->assertFalse($csvdb->has_schema());
+        $csvdb->schema(SchemaValidatorTest::$schema);
+        $this->assertTrue($csvdb->has_schema());
     }
 
     // CONVERTER

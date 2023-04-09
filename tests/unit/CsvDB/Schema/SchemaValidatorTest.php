@@ -21,7 +21,7 @@ class SchemaValidatorTest extends TestCase
     public static array $schema = array(
         'header1' => array(
             "type" => "string",
-            "index" => "unique"
+            "constraint" => "unique"
         ),
         'header2' => array(
             "type" => "string"
@@ -105,7 +105,7 @@ class SchemaValidatorTest extends TestCase
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
         $this->assertFalse($csvdb->has_schema());
 
-        $this->expectExceptionMessage('Schema is not valid. Wrong Index for header3: {"type":"integer","index":"not null"}');
+        $this->expectExceptionMessage('Schema is not valid. Wrong Constraint for header3: independent');
         $csvdb->schema(array(
             'header1' => array(
                 "type" => "string"
@@ -115,7 +115,7 @@ class SchemaValidatorTest extends TestCase
             ),
             'header3' => array(
                 "type" => "integer",
-                "index" => "not null"
+                "constraint" => "independent"
             )
         ));
     }
@@ -168,29 +168,56 @@ class SchemaValidatorTest extends TestCase
 
     public function testValidateInsertDefault()
     {
-        $raw = $this->prepareDefaultData();
+        $raw = [];
+        $raw[] = [$this->header[0] => "row10", $this->header[1] => $this->data[2][1], $this->header[2] => 10];
+        $raw[] = [$this->header[0] => "row11", $this->header[1] => $this->data[3][1], $this->header[2] => 11];
+        $raw[] = [$this->header[0] => "row12", $this->header[1] => $this->data[4][1], $this->header[2] => 12];
+
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
         $csvdb->schema(self::$schema);
 
-        $test1 = $csvdb->insert($raw[0]);
-        $this->assertEquals([$raw[0]], $test1);
+        $test1_record = [$this->header[0] => "row9", $this->header[1] => $this->data[2][1], $this->header[2] => 9];
+        $test1 = $csvdb->insert($test1_record);
+        $this->assertEquals([$test1_record], $test1);
 
         $test2 = $csvdb->insert($raw);
         $this->assertEquals($raw, $test2);
+    }
 
-        $test3_record = array_values($raw[0]);
-        $test3 = $csvdb->insert($test3_record);
-        $this->assertEquals([$raw[0]], $test3);
+    public function testValidateInsertNonAssoc()
+    {
+        $raw = $this->prepareDefaultData();
+        $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
+        $csvdb->schema(array(
+            'header1' => array(
+                "type" => "string"
+            ),
+            'header2' => array(
+                "type" => "string"
+            ),
+            'header3' => array(
+                "type" => "integer"
+            )
+        ));
+
+        $test1_record = array_values($raw[0]);
+        $test1 = $csvdb->insert($test1_record);
+        $this->assertEquals([$raw[0]], $test1);
     }
 
     public function testValidateInsertStrict()
     {
-        $raw = $this->prepareDefaultData();
+        $raw = [];
+        $raw[] = [$this->header[0] => "row10", $this->header[1] => $this->data[2][1], $this->header[2] => 10];
+        $raw[] = [$this->header[0] => "row11", $this->header[1] => $this->data[3][1], $this->header[2] => 11];
+        $raw[] = [$this->header[0] => "row12", $this->header[1] => $this->data[4][1], $this->header[2] => 12];
+
         $csvdb = new CSVDB(vfsStream::url("assets/" . $this->filename));
         $csvdb->schema(self::$schema, true);
 
-        $test1 = $csvdb->insert($raw[0]);
-        $this->assertEquals([$raw[0]], $test1);
+        $test1_record = [$this->header[0] => "row9", $this->header[1] => $this->data[2][1], $this->header[2] => 9];
+        $test1 = $csvdb->insert($test1_record);
+        $this->assertEquals([$test1_record], $test1);
 
         $test2 = $csvdb->insert($raw);
         $this->assertEquals($raw, $test2);

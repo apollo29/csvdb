@@ -6,5 +6,5 @@ class SchemaEnum extends AbstractEnum
 {
     const TYPE = "type";
 
-    const INDEX = "index";
+    const CONSTRAINT = "constraint";
 }

@@ -1,7 +1,7 @@
 {
   "index": {
     "type": "integer",
-    "index": "auto_increment"
+    "constraint": "auto_increment"
   },
   "header1": {
     "type": "string"
@@ -11,6 +11,6 @@
   },
   "header3": {
     "type": "integer",
-    "index": "unique"
+    "constraint": "unique"
   }
 }
