@@ -11,9 +11,9 @@ trait SchemaTrait
     /**
      * @throws \Exception
      */
-    public function schema(array $schema, bool $strict = false): void
+    public function schema(array $schema, bool $strict = false, DefaultFunctions $functions = null): void
     {
-        $this->schema = new Schema($schema, $strict);
+        $this->schema = new Schema($schema, $strict, $functions);
         $constraints = $this->schema->constraints();
         foreach ($constraints as $key => $constraint) {
             if ($constraint[SchemaEnum::CONSTRAINT] === ConstraintEnum::AUTO_INCREMENT) {

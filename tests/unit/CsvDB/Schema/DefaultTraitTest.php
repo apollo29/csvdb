@@ -3,6 +3,7 @@
 namespace CSVDB\Schema;
 
 use CSVDB\CSVDB;
+use CSVDB\Helpers\CSVConfig;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
@@ -115,5 +116,48 @@ class DefaultTraitTest extends TestCase
 
         $this->expectExceptionMessage("Record is not an associative array and some Fields are missing. Please provide CSVDB::EMPTY for all Fiels with Default values");
         $csvdb->insert($record1_raw);
+    }
+
+    public function testInsertCustomFunction()
+    {
+        $raw = $this->prepareDefaultData();
+
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file, CSVConfig::default());
+        $csvdb->schema(array(
+            'header1' => array(
+                "type" => "string"
+            ),
+            'header2' => array(
+                "type" => "string",
+                "default" => "test2_1"
+            ),
+            'header3' => array(
+                "type" => "string",
+                "default" => "custom_function"
+            )
+        ), false, new CustomDefaultFunctionTest());
+
+        $record1_raw = [$this->header[0] => "row10"];
+
+        $test1 = $raw;
+        $test1[] = $record1_raw;
+        $result1 = $csvdb->insert($record1_raw);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals(count($test1), count($data1));
+        $this->assertEquals($result1[0][$this->header[0]], $record1_raw[$this->header[0]]);
+        $this->assertEquals($result1[0][$this->header[1]], "test2_1");
+        $this->assertEquals($result1[0][$this->header[2]], CustomDefaultFunctionTest::VALUE);
+    }
+}
+
+
+class CustomDefaultFunctionTest extends DefaultFunctions
+{
+    const VALUE = "this is a custom function";
+
+    public function custom_function(): string
+    {
+        return self::VALUE;
     }
 }
