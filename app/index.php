@@ -121,26 +121,32 @@ row1,test2_1,value5
     $csvdb->dump($test2);
 
     $data = $csvdb->select()->get();
-    var_dump($data);
-    //var_dump($result);
     */
-    $schema = array(
+    $csvdb->schema(array(
         'index' => array(
             "type" => "integer"
         ),
         'header1' => array(
-            "type" => "string"
+            "type" => "string",
+            "default" => "rowX"
         ),
         'header2' => array(
             "type" => "string"
         ),
         'header3' => array(
-            "type" => "string"
+            "type" => "integer",
+            "default" => "current_timestamp"
         )
-    );
+    ));
+    $data = $csvdb->schema->defaults();
+    var_dump($data);
+    //var_dump($result);
+    /*
+
     $csvdb->schema($schema, true);
     //$result = $csvdb->insert(["index"=>10,"header1" => "row6", "header2" => "test2", "header3" => "value6","header4"=>"test"]);
     $result = $csvdb->update(["header4" => "test2"],["index"=>1]);
+    */
     ?>
 </pre>
 

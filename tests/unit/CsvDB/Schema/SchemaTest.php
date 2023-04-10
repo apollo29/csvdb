@@ -6,7 +6,7 @@ use CSVDB\CSVDB;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
-class SchemaValidatorTest extends TestCase
+class SchemaTest extends TestCase
 {
 
     protected string $filename = "test.csv";

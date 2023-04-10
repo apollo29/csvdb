@@ -11,15 +11,17 @@ class Schema
 {
     public array $schema;
     public bool $strict;
+    public DefaultFunctions $functions;
 
     /**
      * @param array $schema
      * @throws \Exception
      */
-    public function __construct(array $schema, bool $strict = false)
+    public function __construct(array $schema, bool $strict = false, DefaultFunctions $functions = null)
     {
         $this->schema = $this->validate_schema($schema);
         $this->strict = $strict;
+        $this->functions = $functions ?: new SchemaDefaultFunctions();
     }
 
     /**
@@ -97,18 +99,7 @@ class Schema
             $this->validate_simple_record($record);
         }
 
-        if ($this->strict) {
-            $schema_keys = array_keys($this->schema);
-            $record_keys = array_keys($record);
-            $diff_schema = array_diff($schema_keys, $record_keys);
-            $diff_record = array_diff($record_keys, $schema_keys);
-            if (count($diff_schema) !== 0 && !$update) {
-                throw new \Exception("Schema Validation is strict. Field(s) " . json_encode(array_values($diff_schema)) . " in Record is/are missing.");
-            }
-            if (count($diff_record) !== 0) {
-                throw new \Exception("Schema Validation is strict. Field(s) " . json_encode(array_values($diff_record)) . " in Record is/are missing in schema.");
-            }
-        }
+        $this->validate_record_with_schema($record, $update);
 
         foreach ($record as $key => $value) {
             if (array_key_exists($key, $this->schema)) {
@@ -135,6 +126,27 @@ class Schema
     /**
      * @throws \Exception
      */
+    private function validate_record_with_schema(array $record, bool $update = false)
+    {
+        if ($this->strict) {
+            $schema_keys = array_keys($this->schema);
+            $record_keys = array_keys($record);
+            $diff_schema = array_diff($schema_keys, $record_keys);
+            $diff_record = array_diff($record_keys, $schema_keys);
+            if (count($diff_schema) !== 0 && !$update) {
+                if (!$this->has_defaults(array_values($diff_schema))) {
+                    throw new \Exception("Schema Validation is strict. Field(s) " . json_encode(array_values($diff_schema)) . " in Record is/are missing.");
+                }
+            }
+            if (count($diff_record) !== 0) {
+                throw new \Exception("Schema Validation is strict. Field(s) " . json_encode(array_values($diff_record)) . " in Record is/are missing in schema.");
+            }
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
     private function validate_simple_record(array $record): void
     {
         $schema = array_values($this->schema);
@@ -149,12 +161,46 @@ class Schema
         }
     }
 
-    // CONSTAINT
+    // CONSTRAINT
 
     public function constraints(): array
     {
         return array_filter($this->schema, function ($value) {
             return array_key_exists(SchemaEnum::CONSTRAINT, $value);
         });
+    }
+
+    // DEFAULT
+
+    public function defaults(): array
+    {
+        return array_filter($this->schema, function ($value) {
+            return array_key_exists(SchemaEnum::DEFAULT, $value);
+        });
+    }
+
+    public function default(string $key)
+    {
+        $defaults = $this->defaults();
+        if (array_key_exists($key, $defaults)) {
+            return $defaults[$key][SchemaEnum::DEFAULT];
+        }
+        return null;
+    }
+
+    private function has_defaults(array $key): bool
+    {
+        $default = false;
+        foreach ($key as $field) {
+            if (array_key_exists($field, $this->defaults())) {
+                $default = true;
+            }
+        }
+        return $default;
+    }
+
+    public function has_default(string $key): bool
+    {
+        return array_key_exists($key, $this->defaults());
     }
 }

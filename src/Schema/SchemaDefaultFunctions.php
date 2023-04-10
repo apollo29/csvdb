@@ -2,10 +2,7 @@
 
 namespace CSVDB\Schema;
 
-class SchemaDefaultFunctions
+class SchemaDefaultFunctions extends DefaultFunctions
 {
-    public static function current_timestamp(): int
-    {
-        return time();
-    }
+
 }
