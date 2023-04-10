@@ -2,6 +2,8 @@
 
 namespace CSVDB\History;
 
+use DateTime;
+
 trait HistoryTrait
 {
 

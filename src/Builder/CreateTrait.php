@@ -25,6 +25,10 @@ trait CreateTrait
 
         $this->validate($data);
 
+        // default constraint
+        $data = $this->prepare_default($data);
+        var_dump($data);
+
         if (!$this->check_unique_constraints($data)) {
             throw new CannotInsertRecord("Unique constraints are violated.");
         }

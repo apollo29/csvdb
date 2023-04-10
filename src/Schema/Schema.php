@@ -2,6 +2,7 @@
 
 namespace CSVDB\Schema;
 
+use CSVDB\CSVDB;
 use CSVDB\Enums\ConstraintEnum;
 use CSVDB\Enums\DatatypeEnum;
 use CSVDB\Enums\SchemaEnum;
@@ -104,7 +105,7 @@ class Schema
         foreach ($record as $key => $value) {
             if (array_key_exists($key, $this->schema)) {
                 // type
-                if (!empty($value)) {
+                if (!empty($value) && $value !== CSVDB::EMPTY) {
                     $type = $this->schema[$key][SchemaEnum::TYPE];
                     $value_type = DatatypeEnum::getValidTypeFromSample($value);
                     if (is_string($value_type)) {
@@ -151,11 +152,14 @@ class Schema
     {
         $schema = array_values($this->schema);
         for ($i = 0; $i < count($record); $i++) {
-            $type = $schema[$i]["type"];
-            $value_type = DatatypeEnum::getValidTypeFromSample($record[$i]);
-            if (is_string($value_type)) {
-                if ($value_type !== $type) {
-                    throw new \Exception("Schema is violated: Expected Type $type, but Type is $value_type");
+            $value = $record[$i];
+            if (!empty($value) && $value !== CSVDB::EMPTY) {
+                $type = $schema[$i]["type"];
+                $value_type = DatatypeEnum::getValidTypeFromSample($record[$i]);
+                if (is_string($value_type)) {
+                    if ($value_type !== $type) {
+                        throw new \Exception("Schema is violated: Expected Type $type, but Type is $value_type");
+                    }
                 }
             }
         }

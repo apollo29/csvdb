@@ -138,7 +138,7 @@ row1,test2_1,value5
             "default" => "current_timestamp"
         )
     ));
-    $data = $csvdb->schema->defaults();
+    $data = $csvdb->insert(["index"=>22,"header1"=>CSVDB::EMPTY,"header2"=>"test"]);
     var_dump($data);
     //var_dump($result);
     /*
