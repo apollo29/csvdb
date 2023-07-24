@@ -6,7 +6,7 @@ class ConstraintEnum extends AbstractEnum
 {
     const AUTO_INCREMENT = "auto_increment";
 
-    const PRIMARY_KEY = "primary_key";
+    const PRIMARY_KEY = "primary";
 
     const UNIQUE = "unique";
 
