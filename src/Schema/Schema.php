@@ -3,7 +3,7 @@
 namespace CSVDB\Schema;
 
 use CSVDB\CSVDB;
-use CSVDB\Enums\ConstraintEnum;
+use CSVDB\Enums\QueryEnum;
 use CSVDB\Enums\DatatypeEnum;
 use CSVDB\Enums\SchemaEnum;
 use CSVDB\Helpers\Records;
@@ -65,7 +65,7 @@ class Schema
     private function validate_constraint(string $field, string $constraint): void
     {
         try {
-            $valid = ConstraintEnum::isValid($constraint);
+            $valid = QueryEnum::isValid($constraint);
             if (!$valid) {
                 throw new \Exception("Schema is not valid. Wrong Constraint for $field: " . $constraint);
             }

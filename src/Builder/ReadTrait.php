@@ -91,11 +91,6 @@ trait ReadTrait
                 if ($this->where_is_like_stmt($record, $val)) {
                     $return = true;
                 }
-                /*
-                if (Str::contains($record, $val)) {
-                    $return = true;
-                }
-                */
             }
             return $return;
         }

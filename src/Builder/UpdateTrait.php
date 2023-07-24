@@ -31,6 +31,9 @@ trait UpdateTrait
         }
 
         $this->validate($update, true);
+
+        $update = $this->prepare_default($update, true);
+
         if (!$this->check_unique_constraints_update($update, $where)) {
             throw new \Exception("Unique constraints are violated.");
         }
@@ -90,6 +93,7 @@ trait UpdateTrait
         return $record[$key] == $value;
     }
 
+    // todo where stmts!!! -> own trait
     private function update_stmt(array $record, array $update): array
     {
         foreach ($update as $key => $value) {

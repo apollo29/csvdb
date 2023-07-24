@@ -138,7 +138,13 @@ row1,test2_1,value5
             "default" => "current_timestamp"
         )
     ));
-    $data = $csvdb->insert(["index"=>22,"header1"=>CSVDB::EMPTY,"header2"=>"test"]);
+    //$csvdb->query("INSERT INTO phpunit SET index = 99, header2 = 'test'");
+    //$csvdb->query("SELECT STRAIGHT_JOIN a, b, c  FROM some_table an_alias WHERE d > 5");
+    echo "<hr />";
+    //$data = $csvdb->query("SELECT header1, header2 FROM phpunit");
+    //var_dump($data);
+    $data = $csvdb->query("SELECT * FROM phpunit WHERE header2 = 'test' OR header2 != 'test2'");
+    //$data = $csvdb->select()->get();
     var_dump($data);
     //var_dump($result);
     /*

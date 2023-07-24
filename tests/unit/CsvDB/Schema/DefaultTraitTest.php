@@ -149,6 +149,22 @@ class DefaultTraitTest extends TestCase
         $this->assertEquals($result1[0][$this->header[1]], "test2_1");
         $this->assertEquals($result1[0][$this->header[2]], CustomDefaultFunctionTest::VALUE);
     }
+
+    public function testUpdateDefault()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+        $csvdb->schema($this->schema);
+
+        $test1 = $raw;
+        $test1[3]["header2"] = "test2_1";
+        $test1[4]["header2"] = "test2_1";
+        $result = $csvdb->update(["header2" => "test2_1"], ["header2" => ["test2_1", CSVDB::NEG]]);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+        $this->assertEquals($result, [$test1[3], $test1[4]]);
+    }
 }
 
 

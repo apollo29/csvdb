@@ -2,7 +2,7 @@
 
 namespace CSVDB\Schema;
 
-use CSVDB\Enums\ConstraintEnum;
+use CSVDB\Enums\QueryEnum;
 use CSVDB\Enums\SchemaEnum;
 
 trait SchemaTrait
@@ -16,11 +16,11 @@ trait SchemaTrait
         $this->schema = new Schema($schema, $strict, $functions);
         $constraints = $this->schema->constraints();
         foreach ($constraints as $key => $constraint) {
-            if ($constraint[SchemaEnum::CONSTRAINT] === ConstraintEnum::AUTO_INCREMENT) {
+            if ($constraint[SchemaEnum::CONSTRAINT] === QueryEnum::AUTO_INCREMENT) {
                 $this->check_autoincrement($key);
-            } else if ($constraint[SchemaEnum::CONSTRAINT] === ConstraintEnum::PRIMARY_KEY) {
+            } else if ($constraint[SchemaEnum::CONSTRAINT] === QueryEnum::PRIMARY_KEY) {
                 $this->check_primarykey($key);
-            } else if ($constraint[SchemaEnum::CONSTRAINT] === ConstraintEnum::UNIQUE) {
+            } else if ($constraint[SchemaEnum::CONSTRAINT] === QueryEnum::UNIQUE) {
                 $this->check_constraint($key);
             }
         }

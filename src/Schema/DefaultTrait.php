@@ -23,7 +23,7 @@ trait DefaultTrait
         return $default;
     }
 
-    private function prepare_default(array $record): array
+    private function prepare_default(array $record, bool $update = false): array
     {
         if (!Records::is_assoc($record) && count($record) !== count($this->schema->schema)) {
             throw new \Exception("Record is not an associative array and some Fields are missing. Please provide CSVDB::EMPTY for all Fiels with Default values");
@@ -32,14 +32,14 @@ trait DefaultTrait
         if (Records::has_multiple_records($record)) {
             $records = [];
             foreach ($record as $data) {
-                $records[] = $this->prepare_default_stmt($data);
+                $records[] = $this->prepare_default_stmt($data, $update);
             }
             return $records;
         }
-        return $this->prepare_default_stmt($record);
+        return $this->prepare_default_stmt($record, $update);
     }
 
-    private function prepare_default_stmt(array $record): array
+    private function prepare_default_stmt(array $record, bool $update = false): array
     {
         if ($this->has_schema()) {
             if (Records::is_assoc($record)) {
@@ -50,7 +50,7 @@ trait DefaultTrait
                         if (empty($value) || $value === CSVDB::EMPTY) {
                             $record[$key] = $this->default($key);
                         }
-                    } else {
+                    } else if (!$update) {
                         $record[$key] = $this->default($key);
                     }
                 }

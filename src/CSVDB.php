@@ -12,6 +12,7 @@ use CSVDB\Helpers\CSVUtilities;
 use CSVDB\Helpers\DatatypeTrait;
 use CSVDB\Helpers\Records;
 use CSVDB\History\HistoryTrait;
+use CSVDB\Query\QueryTrait;
 use CSVDB\Schema\ConstraintsTrait;
 use CSVDB\Schema\DefaultTrait;
 use CSVDB\Schema\Schema;
@@ -31,6 +32,8 @@ class CSVDB implements Builder\Statement
     use ReadTrait;
     use UpdateTrait;
     use DeleteTrait;
+
+    use QueryTrait;
 
     use SchemaTrait;
     use ConstraintsTrait;
@@ -63,6 +66,10 @@ class CSVDB implements Builder\Statement
 
     const NEG = "[CSVDB::NEG]";
     const LIKE = "[CSVDB::LIKE]";
+    const GT = "[CSVDB::GT]";
+    const GTE = "[CSVDB::GTE]";
+    const LT = "[CSVDB::LT]";
+    const LTE = "[CSVDB::LTE]";
     const EMPTY = "[CSVDB::EMPTY]";
 
     /**

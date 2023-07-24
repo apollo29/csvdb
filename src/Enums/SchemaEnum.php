@@ -8,5 +8,9 @@ class SchemaEnum extends AbstractEnum
 
     const CONSTRAINT = "constraint";
 
+    const EXTRA = "extra";
+
+    const NULLABLE = "nullable";
+
     const DEFAULT = "default";
 }
