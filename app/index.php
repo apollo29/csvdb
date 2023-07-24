@@ -60,7 +60,7 @@
 
     function prepareDefaultData(): array
     {
-        $header = array('index', 'header1', 'header2', 'header3');
+        $header = array('id', 'header1', 'header2', 'header3');
         $data = array(
             array(10, 'row1', 'test2_1', 'value5'),
             array(11, 'row2', 'test2_1', 'value4'),
@@ -100,12 +100,12 @@ row1,test2_1,value5
     */
     /*
         $csvdb->unique("header3", "header1");
-        $csvdb->unique_index();
+        $csvdb->unique_id();
     */
     //$test = ["header1" => "row6", "header2" => "test2", "header3" => "value6"];
     //$result = $csvdb->insert($test);
     //var_dump($result);
-    //$csvdb->upsert($test,["index"=>7]);
+    //$csvdb->upsert($test,["id"=>7]);
     //$result = $csvdb->update(["header3"=>"***UPDATE***"],["header2"=>"test2_1"]);
     //$data = $csvdb->select()->where(["header1" => "row1"])->get(); //[["header1" => "row1"],["header3" => "value1"]]
     //$data = $csvdb->select()->where([["header1" => "row1"], ["header3" => "value3"], CSVDB::OR])->get();
@@ -123,7 +123,7 @@ row1,test2_1,value5
     $data = $csvdb->select()->get();
     */
     $csvdb->schema(array(
-        'index' => array(
+        'id' => array(
             "type" => "integer"
         ),
         'header1' => array(
@@ -138,11 +138,10 @@ row1,test2_1,value5
             "default" => "current_timestamp"
         )
     ));
-    //$csvdb->query("INSERT INTO phpunit SET index = 99, header2 = 'test'");
+    print_r(["id"=>10,"header1" => "row6", "header2" => "test2", "header3" => "value6","header4"=>"test"]);
+    $csvdb->query("INSERT INTO phpunit SET id = 99, header1 = 'rowX', header2 = 'test', header3 = 12345");
     //$csvdb->query("SELECT STRAIGHT_JOIN a, b, c  FROM some_table an_alias WHERE d > 5");
     echo "<hr />";
-    //$data = $csvdb->query("SELECT header1, header2 FROM phpunit");
-    //var_dump($data);
     $data = $csvdb->query("SELECT * FROM phpunit WHERE header2 = 'test' OR header2 != 'test2'");
     //$data = $csvdb->select()->get();
     var_dump($data);
@@ -150,8 +149,8 @@ row1,test2_1,value5
     /*
 
     $csvdb->schema($schema, true);
-    //$result = $csvdb->insert(["index"=>10,"header1" => "row6", "header2" => "test2", "header3" => "value6","header4"=>"test"]);
-    $result = $csvdb->update(["header4" => "test2"],["index"=>1]);
+    //$result = $csvdb->insert(["id"=>10,"header1" => "row6", "header2" => "test2", "header3" => "value6","header4"=>"test"]);
+    $result = $csvdb->update(["header4" => "test2"],["id"=>1]);
     */
     ?>
 </pre>

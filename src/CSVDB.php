@@ -41,6 +41,7 @@ class CSVDB implements Builder\Statement
     use DatatypeTrait;
 
     public string $file;
+    public string $database;
     public string $document;
     public string $basedir;
     public CSVConfig $config;
@@ -82,6 +83,7 @@ class CSVDB implements Builder\Statement
         }
 
         $this->file = $file;
+        $this->database = CSVUtilities::csv_database($file);
         $this->basedir = CSVUtilities::csv_dir($file);
         $this->document = CSVUtilities::csv_file($file);
         $this->config = $config ?: CSVConfig::default();

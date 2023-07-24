@@ -3,6 +3,9 @@
 namespace CSVDB\Query;
 
 use CSVDB\CSVDB;
+use League\Csv\CannotInsertRecord;
+use League\Csv\InvalidArgument;
+use League\Csv\UnableToProcessCsv;
 use PHPSQLParser\PHPSQLParser;
 
 trait QueryTrait
@@ -16,7 +19,7 @@ trait QueryTrait
     ];
 
     public array $operators = [
-        "=", "!=", "<>", "LIKE"
+        "=", "!=", "<>", "like", "and", "or"
     ];
 
     private ?PHPSQLParser $parser = null;
@@ -31,28 +34,26 @@ trait QueryTrait
 
     /**
      * @throws \Exception
+     * @throws UnableToProcessCsv
      */
     public function query(string $query)
     {
         var_dump($query);
         $obj = $this->parser()->parse($query);
-        //var_dump($obj);
+        //print_r($obj);
         if ($this->checkKeywords($obj) && $this->checkExpression($obj)) {
             $method = array_keys($obj)[0];
-            switch ($method) {
-                case "SELECT":
-                    return $this->prepareSelect($obj);
-            }
+            return $this->prepareStmt($obj, $method);
         } else {
             throw new \Exception("There is an Error in your Query: $query; Please check the available Keywords [LINK]");
         }
-        return false;
     }
 
     private function checkKeywords(array $query): bool
     {
         $keywords = array_keys($query);
         $diff = array_diff($keywords, $this->keywords);
+        // todo throw?
         return empty($diff);
     }
 
@@ -62,7 +63,20 @@ trait QueryTrait
         foreach ($query as $expression) {
             foreach ($expression as $item) {
                 if (!in_array($item["expr_type"], $this->expr_types)) {
+                    // todo throw?
                     if (!in_array($item["base_expr"], $this->keywords)) {
+                        $check = false;
+                    }
+                }
+                if ($item["expr_type"] == "operator") {
+                    // todo throw?
+                    if (!in_array(strtolower($item["base_expr"]), $this->operators)) {
+                        $check = false;
+                    }
+                }
+                if ($item["expr_type"] == "table") {
+                    // todo throw?
+                    if (strtolower($item["table"]) != strtolower($this->database)) {
                         $check = false;
                     }
                 }
@@ -71,15 +85,27 @@ trait QueryTrait
         return $check;
     }
 
-    private function prepareSelect(array $query): array
+    /**
+     * @throws InvalidArgument
+     * @throws UnableToProcessCsv
+     * @throws CannotInsertRecord
+     */
+    private function prepareStmt(array $query, string $method): array
     {
-        $select_fields = array();
+        $fields = array();
         $where_expr = array();
+        $where = array();
         foreach ($query as $keyword => $expression) {
             foreach ($expression as $item) {
                 if ($keyword == "SELECT") {
                     if ($item['expr_type'] == "colref" && $item['base_expr'] != "*") {
-                        $select_fields[] = $item['base_expr'];
+                        $fields[] = $item['base_expr'];
+                    }
+                } else if ($keyword == "SET") {
+                    if ($item['expr_type'] == "expression") {
+                        $field = $item["sub_tree"][0]["base_expr"];
+                        $value = trim($item["sub_tree"][2]["base_expr"], "\"\'");
+                        $fields[$field] = $value;
                     }
                 } else if ($keyword == "WHERE") {
                     if ($item['expr_type'] == "colref") {
@@ -102,14 +128,20 @@ trait QueryTrait
                 }
             }
         }
-        $where_expr2 = $this->create_where($where_expr);
-        print_r($where_expr2);
 
-        $q = $this->select($select_fields);
-        if (!empty($where_expr)) {
-            $q->where($where_expr2);
+        if ($method == "SELECT") {
+            $q = $this->select($fields);
+            if (!empty($where_expr)) {
+                $where_expr2 = $this->create_where($where_expr);
+                print_r($where_expr2);
+                $q->where($where_expr2);
+            }
+            return $q->get();
+        } else if ($method == "INSERT") {
+            print_r($fields);
+            return $this->insert($fields);
         }
-        return $q->get();
+        return array();
     }
 
     private function create_where(array $where_expr): array

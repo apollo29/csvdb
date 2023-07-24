@@ -18,7 +18,7 @@ class CSVUtilities
     {
         if (is_file($document)) {
             $path_parts = pathinfo($document);
-            return $path_parts['filename'].".".$path_parts['extension'];
+            return $path_parts['filename'] . "." . $path_parts['extension'];
         }
         return null;
     }
@@ -32,4 +32,12 @@ class CSVUtilities
         return null;
     }
 
+    public static function csv_database($document): ?string
+    {
+        if (is_file($document)) {
+            $path_parts = pathinfo($document);
+            return $path_parts['filename'];
+        }
+        return null;
+    }
 }
