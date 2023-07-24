@@ -53,6 +53,7 @@ class CSVDB implements Builder\Statement
     private string $operator = CSVDB::AND;
     private array $order = array();
     private int $limit = 0;
+    private int $offset = 0;
     private bool $count = false;
 
     private Reader $cache;
@@ -176,9 +177,10 @@ class CSVDB implements Builder\Statement
         return $this;
     }
 
-    public function limit(int $limit = 0): Builder\Statement
+    public function limit(int $limit = 0, int $offset = 0): Builder\Statement
     {
         $this->limit = $limit;
+        $this->offset = $offset;
         return $this;
     }
 
@@ -208,6 +210,11 @@ class CSVDB implements Builder\Statement
         // limit
         if ($this->limit > 0) {
             $stmt = $stmt->limit($this->limit);
+        }
+
+        // offset
+        if ($this->offset > 0) {
+            $stmt = $stmt->offset($this->offset);
         }
 
         // select

@@ -145,9 +145,11 @@ row1,test2_1,value5
     $data = $csvdb->query("INSERT INTO phpunit (id, header1, header2, header3) VALUES (99, 'rowX', 'test', 12345)");
     var_dump($data);
     echo "<hr />";
-    $data = $csvdb->query("SELECT * FROM phpunit WHERE header2 = 'test' OR header2 != 'test2'");
+    */
+    $data = $csvdb->query("SELECT COUNT(*) FROM phpunit WHERE id = 22");
     var_dump($data);
     echo "<hr />";
+    /*
     $data = $csvdb->query("UPDATE phpunit SET header1 = 'update_rowX', header2 = 'update_test', header3 = 11111 WHERE id = 99");
     var_dump($data);
     echo "<hr />";

@@ -13,7 +13,7 @@ interface Statement
 
     public function orderBy($orderVal = array()): Statement;
 
-    public function limit(int $limit = 0): Statement;
+    public function limit(int $limit = 0, int $offset = 0): Statement;
 
     public function get(Converter $converter = null): array;
 }

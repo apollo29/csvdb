@@ -11,7 +11,7 @@ use PHPSQLParser\PHPSQLParser;
 trait QueryTrait
 {
     public array $keywords = [
-        "INSERT", "SELECT", "UPDATE", "DELETE", "FROM", "COUNT", "INTO", "VALUES", "SET", "WHERE", "ORDER", "LIKE", "NOT", "NULL", "ASC", "DESC"
+        "INSERT", "SELECT", "UPDATE", "DELETE", "FROM", "COUNT", "INTO", "VALUES", "SET", "WHERE", "ORDER", "LIKE", "LIMIT", "ASC", "DESC" //, "NOT", "NULL"
     ];
 
     public array $expr_types = [
@@ -59,7 +59,7 @@ trait QueryTrait
     {
         $check = true;
         foreach ($query as $method => $expression) {
-            if ($method != "DELETE") {
+            if ($method != "DELETE" && $method != "LIMIT") {
                 foreach ($expression as $item) {
                     if (!in_array($item["expr_type"], $this->expr_types)) {
                         // todo throw?
@@ -92,14 +92,20 @@ trait QueryTrait
      */
     private function prepareStmt(array $query, string $method)
     {
+        $count = false;
         $fields = array();
         $where_expr = array();
         $where = array();
+        $limit = array();
+        $order = array();
         foreach ($query as $keyword => $expression) {
             foreach ($expression as $item) {
                 if ($keyword == "SELECT") {
                     if ($item['expr_type'] == "colref" && $item['base_expr'] != "*") {
                         $fields[] = $item['base_expr'];
+                    }
+                    if ($item['expr_type'] == "aggregate_function") {
+                        $count = true;
                     }
                 } else if ($keyword == "INSERT") {
                     if ($item['expr_type'] == "column-list") {
@@ -133,7 +139,16 @@ trait QueryTrait
                         $where["value"] = trim($item['base_expr'], "\"\'");
                         $where_expr[] = $where;
                     }
+                } else if ($keyword == "ORDER") {
+                    if ($item['expr_type'] == "colref") {
+                        // todo check if more than one order!
+                        $order = [$item['base_expr'] => $this->direction($item['direction'])];
+                    }
                 }
+            }
+
+            if ($keyword == "LIMIT") {
+                $limit = ["limit" => $expression['rowcount'], "offset" => $expression['offset']];
             }
         }
 
@@ -141,8 +156,17 @@ trait QueryTrait
             return $this->insert($fields);
         } else if ($method == "SELECT") {
             $q = $this->select($fields);
+            if ($count) {
+                $q->count();
+            }
             if (!empty($where_expr)) {
                 $q->where($this->create_where($where_expr));
+            }
+            if (!empty($limit)) {
+                $q->limit($limit["limit"], $limit["offset"]);
+            }
+            if (!empty($order)) {
+                $q->orderBy($order);
             }
             return $q->get();
         } else if ($method == "UPDATE") {
@@ -205,10 +229,19 @@ trait QueryTrait
 
     private function operator(string $operator): string
     {
-        if (strtolower($operator) == "or") {
+        if (strtolower($operator) == CSVDB::OR) {
             return CSVDB::OR;
         } else {
             return CSVDB::AND;
+        }
+    }
+
+    private function direction(string $direction): string
+    {
+        if (strtolower($direction) == CSVDB::DESC) {
+            return CSVDB::DESC;
+        } else {
+            return CSVDB::ASC;
         }
     }
 

@@ -30,3 +30,9 @@ composer require apollo29/csvdb
 
 ### Delete Records
 
+### Query
+
+```sql
+SELECT * FROM example
+```
+
