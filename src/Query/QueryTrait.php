@@ -11,11 +11,11 @@ use PHPSQLParser\PHPSQLParser;
 trait QueryTrait
 {
     public array $keywords = [
-        "INSERT", "SELECT", "UPDATE", "DELETE", "FROM", "COUNT", "INTO", "SET", "WHERE", "ORDER", "LIKE", "NOT", "NULL", "ASC", "DESC"
+        "INSERT", "SELECT", "UPDATE", "DELETE", "FROM", "COUNT", "INTO", "VALUES", "SET", "WHERE", "ORDER", "LIKE", "NOT", "NULL", "ASC", "DESC"
     ];
 
     public array $expr_types = [
-        "table", "expression", "colref", "operator", "const"
+        "table", "expression", "colref", "operator", "const", "column-list", "record"
     ];
 
     public array $operators = [
@@ -38,9 +38,7 @@ trait QueryTrait
      */
     public function query(string $query)
     {
-        var_dump($query);
         $obj = $this->parser()->parse($query);
-        //print_r($obj);
         if ($this->checkKeywords($obj) && $this->checkExpression($obj)) {
             $method = array_keys($obj)[0];
             return $this->prepareStmt($obj, $method);
@@ -60,24 +58,26 @@ trait QueryTrait
     private function checkExpression(array $query): bool
     {
         $check = true;
-        foreach ($query as $expression) {
-            foreach ($expression as $item) {
-                if (!in_array($item["expr_type"], $this->expr_types)) {
-                    // todo throw?
-                    if (!in_array($item["base_expr"], $this->keywords)) {
-                        $check = false;
+        foreach ($query as $method => $expression) {
+            if ($method != "DELETE") {
+                foreach ($expression as $item) {
+                    if (!in_array($item["expr_type"], $this->expr_types)) {
+                        // todo throw?
+                        if (!in_array($item["base_expr"], $this->keywords)) {
+                            $check = false;
+                        }
                     }
-                }
-                if ($item["expr_type"] == "operator") {
-                    // todo throw?
-                    if (!in_array(strtolower($item["base_expr"]), $this->operators)) {
-                        $check = false;
+                    if ($item["expr_type"] == "operator") {
+                        // todo throw?
+                        if (!in_array(strtolower($item["base_expr"]), $this->operators)) {
+                            $check = false;
+                        }
                     }
-                }
-                if ($item["expr_type"] == "table") {
-                    // todo throw?
-                    if (strtolower($item["table"]) != strtolower($this->database)) {
-                        $check = false;
+                    if ($item["expr_type"] == "table") {
+                        // todo throw?
+                        if (strtolower($item["table"]) != strtolower($this->database)) {
+                            $check = false;
+                        }
                     }
                 }
             }
@@ -90,7 +90,7 @@ trait QueryTrait
      * @throws UnableToProcessCsv
      * @throws CannotInsertRecord
      */
-    private function prepareStmt(array $query, string $method): array
+    private function prepareStmt(array $query, string $method)
     {
         $fields = array();
         $where_expr = array();
@@ -100,6 +100,14 @@ trait QueryTrait
                 if ($keyword == "SELECT") {
                     if ($item['expr_type'] == "colref" && $item['base_expr'] != "*") {
                         $fields[] = $item['base_expr'];
+                    }
+                } else if ($keyword == "INSERT") {
+                    if ($item['expr_type'] == "column-list") {
+                        $fields = $this->create_insert_fields($item['sub_tree'], $fields);
+                    }
+                } else if ($keyword == "VALUES") {
+                    if ($item['expr_type'] == "record") {
+                        $fields = $this->create_insert_values($item['data'], $fields);
                     }
                 } else if ($keyword == "SET") {
                     if ($item['expr_type'] == "expression") {
@@ -129,17 +137,18 @@ trait QueryTrait
             }
         }
 
-        if ($method == "SELECT") {
+        if ($method == "INSERT") {
+            return $this->insert($fields);
+        } else if ($method == "SELECT") {
             $q = $this->select($fields);
             if (!empty($where_expr)) {
-                $where_expr2 = $this->create_where($where_expr);
-                print_r($where_expr2);
-                $q->where($where_expr2);
+                $q->where($this->create_where($where_expr));
             }
             return $q->get();
-        } else if ($method == "INSERT") {
-            print_r($fields);
-            return $this->insert($fields);
+        } else if ($method == "UPDATE") {
+            return $this->update($fields, $this->create_where($where_expr));
+        } else if ($method == "DELETE") {
+            return $this->delete($this->create_where($where_expr));
         }
         return array();
     }
@@ -147,27 +156,31 @@ trait QueryTrait
     private function create_where(array $where_expr): array
     {
         $where = array();
-        for ($i = 0; $i < count($where_expr); $i++) {
-            $current = $i;
-            $expression = $where_expr[$i];
-            if (array_key_exists("concat", $expression)) {
-                if (strtolower($expression["concat"]) == "or") {
-                    $where[] =
-                        [
-                            $this->create_where_expression($where_expr[$current - 1]),
-                            $this->create_where_expression($where_expr[$current + 1]),
-                            $this->operator($expression["concat"])
-                        ];
-                    $i++;
-                } else if (strtolower($expression["concat"]) == "and") {
-                    if (empty($where)) {
-                        $where[] = [
-                            $this->create_where_expression($where_expr[$current - 1]),
-                            $this->create_where_expression($where_expr[$current + 1])
-                        ];
+        if (count($where_expr) == 1) {
+            $where[] = $this->create_where_expression($where_expr[0]);
+        } else {
+            for ($i = 0; $i < count($where_expr); $i++) {
+                $current = $i;
+                $expression = $where_expr[$i];
+                if (array_key_exists("concat", $expression)) {
+                    if (strtolower($expression["concat"]) == "or") {
+                        $where[] =
+                            [
+                                $this->create_where_expression($where_expr[$current - 1]),
+                                $this->create_where_expression($where_expr[$current + 1]),
+                                $this->operator($expression["concat"])
+                            ];
                         $i++;
-                    } else {
-                        $where[] = $this->create_where_expression($where_expr[$current + 1]);
+                    } else if (strtolower($expression["concat"]) == "and") {
+                        if (empty($where)) {
+                            $where[] = [
+                                $this->create_where_expression($where_expr[$current - 1]),
+                                $this->create_where_expression($where_expr[$current + 1])
+                            ];
+                            $i++;
+                        } else {
+                            $where[] = $this->create_where_expression($where_expr[$current + 1]);
+                        }
                     }
                 }
             }
@@ -197,5 +210,26 @@ trait QueryTrait
         } else {
             return CSVDB::AND;
         }
+    }
+
+    private function create_insert_fields(array $expression, array $fields): array
+    {
+        foreach ($expression as $item) {
+            if ($item["expr_type"] == "colref") {
+                $fields[] = $item["base_expr"];
+            }
+        }
+        return $fields;
+    }
+
+    private function create_insert_values(array $expression, array $fields): array
+    {
+        $insert = array();
+        for ($i = 0; $i < count($expression); $i++) {
+            if ($expression[$i]["expr_type"] == "const") {
+                $insert[$fields[$i]] = trim($expression[$i]['base_expr'], "\"\'");
+            }
+        }
+        return $insert;
     }
 }

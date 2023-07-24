@@ -138,14 +138,17 @@ row1,test2_1,value5
             "default" => "current_timestamp"
         )
     ));
-    print_r(["id"=>10,"header1" => "row6", "header2" => "test2", "header3" => "value6","header4"=>"test"]);
-    $csvdb->query("INSERT INTO phpunit SET id = 99, header1 = 'rowX', header2 = 'test', header3 = 12345");
-    //$csvdb->query("SELECT STRAIGHT_JOIN a, b, c  FROM some_table an_alias WHERE d > 5");
+    $data = $csvdb->query("INSERT INTO phpunit (id, header1, header2, header3) VALUES (99, 'rowX', 'test', 12345)");
+    var_dump($data);
     echo "<hr />";
     $data = $csvdb->query("SELECT * FROM phpunit WHERE header2 = 'test' OR header2 != 'test2'");
-    //$data = $csvdb->select()->get();
     var_dump($data);
-    //var_dump($result);
+    echo "<hr />";
+    $data = $csvdb->query("UPDATE phpunit SET header1 = 'update_rowX', header2 = 'update_test', header3 = 11111 WHERE id = 99");
+    var_dump($data);
+    echo "<hr />";
+    $data = $csvdb->query("DELETE FROM phpunit WHERE id = 99");
+    var_dump($data);
     /*
 
     $csvdb->schema($schema, true);
