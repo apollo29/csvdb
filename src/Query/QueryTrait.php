@@ -15,11 +15,11 @@ trait QueryTrait
     ];
 
     public array $expr_types = [
-        "table", "expression", "colref", "operator", "const", "column-list", "record"
+        "table", "expression", "colref", "operator", "const", "column-list", "record", "in-list"
     ];
 
     public array $operators = [
-        "=", "!=", "<>", "like", "and", "or"
+        "=", "!=", "<>", "like", "and", "or", "in"
     ];
 
     private ?PHPSQLParser $parser = null;
@@ -139,6 +139,10 @@ trait QueryTrait
                         $where["value"] = trim($item['base_expr'], "\"\'");
                         $where_expr[] = $where;
                     }
+                    if ($item['expr_type'] == "in-list") {
+                        $where["value"] = $item['sub_tree'];
+                        $where_expr[] = $where;
+                    }
                 } else if ($keyword == "ORDER") {
                     if ($item['expr_type'] == "colref") {
                         // todo check if more than one order!
@@ -223,6 +227,11 @@ trait QueryTrait
             return [$expression["field"] => [$expression["value"], CSVDB::LIKE]];
         } else if (strtolower($expression["operator"]) == "!=" || strtolower($expression["operator"]) == "<>") {
             return [$expression["field"] => [$expression["value"], CSVDB::NEG]];
+        } else if (strtolower($expression["operator"]) == "in") {
+            $values = array_map(function ($value) {
+                return trim($value['base_expr'], "\"\'");
+            }, $expression["value"]);
+            return [[$expression["field"] => $values], CSVDB::OR];
         }
         return array();
     }

@@ -236,6 +236,20 @@ class QueryTest extends TestCase
         $this->assertEquals($test4, $data4);
     }
 
+    public function testSelectDefaultWhereIn()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = array();
+        $test1[] = $raw[0];
+        $test1[] = $raw[2];
+        $test1[] = $raw[4];
+        $data1 = $csvdb->query("SELECT * FROM test WHERE header1 IN ('row1','row3','row5')");
+        $this->assertEquals($test1, $data1);
+    }
+
     public function testSelectDefaultCount()
     {
         $file = vfsStream::url("assets/" . $this->filename);

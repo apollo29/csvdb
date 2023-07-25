@@ -24,7 +24,7 @@
 
     require '../vendor/autoload.php';
 
-    $csvdb = new CSVDB(__DIR__ . "/csv/games.csv", new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, ";", CSVConfig::HEADERS, CSVConfig::CACHE, true, false));
+    $csvdb = new CSVDB(__DIR__ . "/csv/phpunit.csv", new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, true, false));
 
     $records = [
         [1, 2, 3],
@@ -143,9 +143,14 @@ row1,test2_1,value5
     $data = $csvdb->query("INSERT INTO phpunit (id, header1, header2, header3) VALUES (99, 'rowX', 'test', 12345)");
     var_dump($data);
     echo "<hr />";
-    $data = $csvdb->query("SELECT COUNT(*) FROM phpunit WHERE id = 22");
+    */
+    $data = $csvdb->query("SELECT * FROM phpunit WHERE header2 IN ('test2_1','test2_2','test2_3')");
     var_dump($data);
     echo "<hr />";
+    $data = $csvdb->select()->where([["header2"=>["test2_1","test2_2","test2_3"]],CSVDB::OR])->get(); //query("SELECT * FROM phpunit WHERE header3 IN ('test2_1','test2_2','test2_3')");
+    var_dump($data);
+    echo "<hr />";
+    /*
     $data = $csvdb->query("UPDATE phpunit SET header1 = 'update_rowX', header2 = 'update_test', header3 = 11111 WHERE id = 99");
     var_dump($data);
     echo "<hr />";
@@ -156,7 +161,6 @@ row1,test2_1,value5
     //$result = $csvdb->insert(["id"=>10,"header1" => "row6", "header2" => "test2", "header3" => "value6","header4"=>"test"]);
     $result = $csvdb->update(["header4" => "test2"],["id"=>1]);
     */
-    var_dump($csvdb->getDatatypes());
     ?>
 </pre>
 
