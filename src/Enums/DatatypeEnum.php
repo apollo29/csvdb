@@ -17,6 +17,8 @@ class DatatypeEnum extends AbstractEnum
 
     const TYPE_DATE = 'date';
 
+    const TYPE_TIME = 'time';
+
     private static string $REGEX_FLOAT = '/(^[+-]?$)|(^[+-]?[0-9]+([,.][0-9])?[0-9]*(e[+-]?[0-9]+)?$)/';
 
     private static string $REGEX_INT = '/^[-+]?[0-9]\d*$/';
@@ -31,6 +33,7 @@ class DatatypeEnum extends AbstractEnum
      * @uses isValidFloat
      * @uses isValidInteger
      * @uses isValidBoolean
+     * @uses isValidTime
      * @uses isValidDate
      */
     private static array $validators = array(
@@ -38,7 +41,8 @@ class DatatypeEnum extends AbstractEnum
         self::TYPE_INT => 'isValidInteger',
         self::TYPE_BOOL => 'isValidBoolean',
         self::TYPE_FLOAT => 'isValidFloat',
-        self::TYPE_DATE => 'isValidDate',
+        self::TYPE_TIME => 'isValidTime',
+        self::TYPE_DATE => 'isValidDate'
     );
 
     /**
@@ -118,5 +122,17 @@ class DatatypeEnum extends AbstractEnum
     private static function isValidDate(string $value): bool
     {
         return (bool)strtotime($value);
+    }
+
+    /**
+     * Check if string is time.
+     *
+     * @param string $value
+     *
+     * @return bool
+     */
+    private static function isValidTime(string $value): bool
+    {
+        return preg_match('#^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$#', $value);
     }
 }

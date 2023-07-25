@@ -172,6 +172,12 @@ class CSVDBTest extends TestCase
         $test2[] = $raw[2];
         $data2 = $csvdb->select()->limit(3)->get();
         $this->assertEquals($test2, $data2);
+
+        $test3 = array();
+        $test3[] = $raw[2];
+        $test3[] = $raw[3];
+        $data3 = $csvdb->select()->limit(2, 2)->get();
+        $this->assertEquals($test3, $data3);
     }
 
     public function testSelectDefaultOrderASC()
