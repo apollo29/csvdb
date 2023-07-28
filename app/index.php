@@ -121,11 +121,13 @@ row1,test2_1,value5
     $csvdb->dump($test2);
 
     $data = $csvdb->select()->get();
+    */
     $csvdb->schema(array(
         'id' => array(
             "type" => "integer",
             "constraint" => "primary",
-            //"constraint" => "auto_increment"
+            //"constraint" => "auto_increment",
+            "comment" => "this is a comment"
         ),
         'header1' => array(
             "type" => "string",
@@ -140,6 +142,7 @@ row1,test2_1,value5
             "default" => "current_timestamp"
         )
     ));
+    /*
     $data = $csvdb->query("INSERT INTO phpunit (id, header1, header2, header3) VALUES (99, 'rowX', 'test', 12345)");
     var_dump($data);
     echo "<hr />";
@@ -148,6 +151,7 @@ row1,test2_1,value5
     var_dump($data);
     echo "<hr />";
     $data = $csvdb->select()->where([["header2"=>["test2_1","test2_2","test2_3"]],CSVDB::OR])->get(); //query("SELECT * FROM phpunit WHERE header3 IN ('test2_1','test2_2','test2_3')");
+    var_dump([["header2"=>["test2_1","test2_2","test2_3"]],CSVDB::OR]);
     var_dump($data);
     echo "<hr />";
     /*
@@ -156,9 +160,9 @@ row1,test2_1,value5
     echo "<hr />";
     $data = $csvdb->query("DELETE FROM phpunit WHERE id = 99");
     var_dump($data);
-
     $csvdb->schema($schema, true);
     //$result = $csvdb->insert(["id"=>10,"header1" => "row6", "header2" => "test2", "header3" => "value6","header4"=>"test"]);
+    /*
     $result = $csvdb->update(["header4" => "test2"],["id"=>1]);
     */
     ?>

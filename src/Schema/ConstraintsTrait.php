@@ -11,6 +11,14 @@ use League\Csv\InvalidArgument;
 trait ConstraintsTrait
 {
 
+    public function constraints(): array
+    {
+        if ($this->has_schema()) {
+            return $this->schema->constraints();
+        }
+        return $this->constraints;
+    }
+
     /**
      * @throws CannotInsertRecord
      */

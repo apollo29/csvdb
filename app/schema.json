@@ -1,7 +1,8 @@
 {
   "index": {
     "type": "integer",
-    "constraint": "auto_increment"
+    "constraint": "auto_increment",
+    "comment": "this is a test"
   },
   "header1": {
     "type": "string"
