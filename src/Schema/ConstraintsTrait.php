@@ -3,6 +3,7 @@
 namespace CSVDB\Schema;
 
 use CSVDB\CSVDB;
+use CSVDB\Enums\SchemaEnum;
 use CSVDB\Helpers\Records;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
@@ -13,10 +14,21 @@ trait ConstraintsTrait
 
     public function constraints(): array
     {
+        $constraints = $this->constraints;
         if ($this->has_schema()) {
             return $this->schema->constraints();
+        } else {
+            $schema_constraints = $this->get_constraints($this->getSchema());
+            $constraints = array_merge($constraints, $schema_constraints);
         }
-        return $this->constraints;
+        return $constraints;
+    }
+
+    private function get_constraints(array $schema): array
+    {
+        return array_filter($schema, function ($value) {
+            return array_key_exists(SchemaEnum::CONSTRAINT, $value);
+        });
     }
 
     /**

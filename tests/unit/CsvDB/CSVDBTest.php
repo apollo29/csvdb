@@ -623,6 +623,25 @@ class CSVDBTest extends TestCase
         $this->assertEquals($test1, $data1);
     }
 
+    // todo
+    /*
+    public function testDeleteMultipleWhereOr()
+    {
+        $raw = $this->prepareDefaultData();
+        $file = vfsStream::url("assets/" . $this->filename);
+        $csvdb = new CSVDB($file);
+
+        $test1 = array();
+        $test1[] = $raw[1];
+        $test1[] = $raw[3];
+        $test1[] = $raw[5];
+        $delete = $csvdb->delete(["header1" => ["row1","row3","row5"], CSVDB::OR]);
+        $this->assertTrue($delete);
+        $data1 = $csvdb->select()->get();
+        $this->assertEquals($test1, $data1);
+    }
+    */
+
     // AUTOINCREMENT
 
     public function testAutoincrementDefault()
