@@ -59,10 +59,14 @@ trait SchemaTrait
                 }
                 $structure[$field] = [
                     "type" => $type,
-                    "encoding" => $config->encoding,
-                    "constraint" => $constraint,
-                    "extra" => $extra
+                    "encoding" => $config->encoding
                 ];
+                if (!empty($constraint)) {
+                    $structure[$field]["constraint"]=$constraint;
+                }
+                if (!empty($extra)) {
+                    $structure[$field]["extra"]=$extra;
+                }
             }
         }
         return $structure;
