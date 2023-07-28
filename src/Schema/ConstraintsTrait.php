@@ -27,7 +27,7 @@ trait ConstraintsTrait
     private function get_constraints(array $schema): array
     {
         return array_filter($schema, function ($value) {
-            return array_key_exists(SchemaEnum::CONSTRAINT, $value);
+            return array_key_exists(SchemaEnum::CONSTRAINT, $value) && !empty($value[SchemaEnum::CONSTRAINT]);
         });
     }
 
