@@ -157,6 +157,7 @@ trait ConstraintsTrait
         foreach ($constraint as $value) {
             if (in_array($value, $headers)) {
                 $this->constraints[$value] = $value;
+
             }
         }
     }

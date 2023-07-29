@@ -31,6 +31,7 @@ trait SchemaTrait
         // todo nullable
         $structure = array();
         $config = $this->config;
+        $constraints = $this->constraints;
         if ($this->has_schema()) {
             $schema = $this->schema->schema;
             $index = array_keys($schema)[$config->index];
@@ -38,13 +39,17 @@ trait SchemaTrait
                 if ($field == $index && $config->autoincrement) {
                     $item["extra"] = ConstraintEnum::AUTO_INCREMENT;
                 }
+                if (!empty($constraints[$field])) {
+                    if (empty($item["constraint"])) {
+                        $item["constraint"]=ConstraintEnum::UNIQUE;
+                    }
+                }
                 $item["encoding"] = $config->encoding;
                 $structure[$field] = $item;
             }
         } else {
             $types = $this->getDatatypes();
             $index = array_keys($types)[$config->index];
-            $constraints = $this->constraints;
             foreach ($types as $field => $type) {
                 $constraint = "";
                 $extra = "";
@@ -55,7 +60,7 @@ trait SchemaTrait
                     }
                 }
                 if (array_key_exists($field, $constraints)) {
-                    $constraint = $constraints[$field];
+                    $constraint = ConstraintEnum::UNIQUE;
                 }
                 $structure[$field] = [
                     "type" => $type,
