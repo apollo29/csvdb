@@ -13,4 +13,6 @@ class SchemaEnum extends AbstractEnum
     const NULLABLE = "nullable";
 
     const DEFAULT = "default";
+
+    const COMMENT = "comment";
 }

@@ -148,7 +148,6 @@ trait ConstraintsTrait
     }
 
     /**
-     * @throws InvalidArgument
      * @throws Exception
      */
     public function unique(string ...$constraint): void
@@ -157,9 +156,14 @@ trait ConstraintsTrait
         foreach ($constraint as $value) {
             if (in_array($value, $headers)) {
                 $this->constraints[$value] = $value;
-
             }
         }
     }
 
+    public function remove_unique(string $constraint): void
+    {
+        if (in_array($constraint, $this->constraints)) {
+            unset($constraint, $this->constraints);
+        }
+    }
 }
