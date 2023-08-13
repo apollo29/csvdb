@@ -25,7 +25,7 @@ trait HistoryTrait
 
     public function history_dir(): string
     {
-        $dir = $this->basedir . "/history/";
+        $dir = $this->basedir . "/history_".$this->database."/";
         if (!file_exists($dir)) {
             mkdir($dir);
         }

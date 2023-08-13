@@ -41,7 +41,7 @@
 
 <body>
 
-<h1>csvdb</h1>
+<h1>csvdb: <?= $csvdb->database ?></h1>
 <pre>
     <?php
     /*
