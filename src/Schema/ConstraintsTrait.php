@@ -165,5 +165,9 @@ trait ConstraintsTrait
         if (in_array($constraint, $this->constraints)) {
             unset($this->constraints[$constraint]);
         }
+
+        if ($this->has_schema()) {
+            $this->remove_schema_constraint($constraint);
+        }
     }
 }
