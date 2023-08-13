@@ -207,4 +207,9 @@ class Schema
     {
         return array_key_exists($key, $this->defaults());
     }
+
+    public function remove_constraint(string $constraint)
+    {
+        unset($this->schema[$constraint][SchemaEnum::CONSTRAINT]);
+    }
 }

@@ -41,7 +41,7 @@ trait SchemaTrait
                 }
                 if (!empty($constraints[$field])) {
                     if (empty($item["constraint"])) {
-                        $item["constraint"]=ConstraintEnum::UNIQUE;
+                        $item["constraint"] = ConstraintEnum::UNIQUE;
                     }
                 }
                 $item["encoding"] = $config->encoding;
@@ -67,10 +67,10 @@ trait SchemaTrait
                     "encoding" => $config->encoding
                 ];
                 if (!empty($constraint)) {
-                    $structure[$field]["constraint"]=$constraint;
+                    $structure[$field]["constraint"] = $constraint;
                 }
                 if (!empty($extra)) {
-                    $structure[$field]["extra"]=$extra;
+                    $structure[$field]["extra"] = $extra;
                 }
             }
         }
@@ -80,8 +80,7 @@ trait SchemaTrait
     /**
      * @throws \Exception
      */
-    private
-    function check_autoincrement(string $key): void
+    private function check_autoincrement(string $key): void
     {
         if (!$this->config->autoincrement) {
             throw new \Exception("Schema inconsistency. AUTO_INCREMENT is set for Field $key, but AUTO_INCREMENT is not configured within Config.");
@@ -95,8 +94,7 @@ trait SchemaTrait
     /**
      * @throws \Exception
      */
-    private
-    function check_primarykey(string $key): void
+    private function check_primarykey(string $key): void
     {
         if ($this->index !== $key) {
             throw new \Exception("Schema inconsistency. PRIMARY_KEY is set for Field $key, but Index is set to " . $this->index);
@@ -104,16 +102,19 @@ trait SchemaTrait
         $this->check_constraint($key);
     }
 
-    private
-    function check_constraint(string $key): void
+    private function check_constraint(string $key): void
     {
         if (!array_key_exists($key, $this->constraints)) {
             $this->unique($key);
         }
     }
 
-    public
-    function has_schema(): bool
+    public function remove_schema_constraint(string $constraint)
+    {
+        $this->schema->remove_constraint($constraint);
+    }
+
+    public function has_schema(): bool
     {
         return isset($this->schema);
     }
@@ -121,8 +122,7 @@ trait SchemaTrait
     /**
      * @throws \Exception
      */
-    private
-    function validate(array $record, bool $update = false): void
+    private function validate(array $record, bool $update = false): void
     {
         if ($this->has_schema()) {
             $this->schema->validate($record, $update);
