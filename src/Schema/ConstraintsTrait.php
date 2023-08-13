@@ -163,7 +163,7 @@ trait ConstraintsTrait
     public function remove_unique(string $constraint): void
     {
         if (in_array($constraint, $this->constraints)) {
-            unset($constraint, $this->constraints);
+            unset($this->constraints[$constraint]);
         }
     }
 }
