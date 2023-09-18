@@ -4,6 +4,7 @@ namespace CSVDB\Builder;
 
 use CSVDB\Converter;
 use CSVDB\CSVDB;
+use CSVDB\Enums\ExportEnum;
 
 interface Statement
 {
@@ -16,4 +17,6 @@ interface Statement
     public function limit(int $limit = 0, int $offset = 0): Statement;
 
     public function get(Converter $converter = null): array;
+
+    public function export(string $type = ExportEnum::CSV): string;
 }

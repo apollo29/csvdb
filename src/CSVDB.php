@@ -7,6 +7,9 @@ use CSVDB\Builder\DeleteTrait;
 use CSVDB\Builder\ReadTrait;
 use CSVDB\Builder\UpdateTrait;
 use CSVDB\Cache\CacheTrait;
+use CSVDB\Converter\CSVConverter;
+use CSVDB\Converter\SQLConverter;
+use CSVDB\Enums\ExportEnum;
 use CSVDB\Helpers\CSVConfig;
 use CSVDB\Helpers\CSVUtilities;
 use CSVDB\Helpers\DatatypeTrait;
@@ -21,6 +24,7 @@ use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
 use League\Csv\Statement;
+use League\Csv\TabularDataReader;
 use League\Csv\Writer;
 
 class CSVDB implements Builder\Statement
@@ -188,7 +192,7 @@ class CSVDB implements Builder\Statement
      * @throws InvalidArgument
      * @throws Exception
      */
-    public function get(Converter $converter = null): array
+    private function prepare(): TabularDataReader
     {
         $reader = $this->reader();
         $stmt = Statement::create();
@@ -224,6 +228,17 @@ class CSVDB implements Builder\Statement
             $records = $stmt->process($reader);
         }
 
+        return $records;
+    }
+
+    /**
+     * @throws InvalidArgument
+     * @throws Exception
+     */
+    public function get(Converter $converter = null): array
+    {
+        $records = $this->prepare();
+
         if ($this->count) {
             // count
             $data = array("count" => $records->count());
@@ -242,6 +257,34 @@ class CSVDB implements Builder\Statement
         $this->reset();
         return $data;
     }
+
+    /**
+     * @throws InvalidArgument
+     * @throws \ReflectionException
+     * @throws Exception
+     * @throws \Exception
+     */
+    public function export(string $type = ExportEnum::CSV): string
+    {
+        if ($this->count) {
+            throw new \Exception("Invalid Export: Count is not possible as Export Statement");
+        }
+        if (!ExportEnum::isValid($type)) {
+            throw new \Exception("Invalid Export Type: $type");
+        } else {
+            switch ($type) {
+                case ExportEnum::JSON:
+                    return json_encode($this->get(), JSON_PRETTY_PRINT);
+                case ExportEnum::SQL:
+                    return implode("\n", $this->get(new SQLConverter($this->database)));
+                case ExportEnum::PHP:
+                    return var_export($this->get(), true);
+                default:
+                    return implode("\n", $this->get(new CSVConverter($this->config->delimiter, $this->config->headers)));
+            }
+        }
+    }
+
 
     // UTIL
 
