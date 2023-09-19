@@ -2,14 +2,29 @@
 
 namespace CSVDB\Query;
 
+use CSVDB\Converter;
+use CSVDB\Converter\CSVConverter;
+use CSVDB\Converter\SQLConverter;
 use CSVDB\CSVDB;
+use CSVDB\Enums\ExportEnum;
 use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 use League\Csv\UnableToProcessCsv;
 use PHPSQLParser\PHPSQLParser;
 
-trait QueryTrait
+class QueryBuilder implements Query
 {
+
+    private string $query;
+    private CSVDB $csvdb;
+
+    public function __construct(string $query, CSVDB $csvdb)
+    {
+        $this->query = $query;
+        $this->csvdb = $csvdb;
+    }
+
     public array $keywords = [
         "INSERT", "SELECT", "UPDATE", "DELETE", "FROM", "COUNT", "INTO", "VALUES", "SET", "WHERE", "ORDER", "LIKE", "LIMIT", "ASC", "DESC" //, "NOT", "NULL"
     ];
@@ -30,15 +45,6 @@ trait QueryTrait
             $this->parser = new PHPSQLParser();
         }
         return $this->parser;
-    }
-
-    /**
-     * @throws \Exception
-     * @throws UnableToProcessCsv
-     */
-    public function query2(string $query)
-    {
-
     }
 
     private function checkKeywords(array $query): bool
@@ -69,7 +75,7 @@ trait QueryTrait
                     }
                     if ($item["expr_type"] == "table") {
                         // todo throw?
-                        if (strtolower($item["table"]) != strtolower($this->database)) {
+                        if (strtolower($item["table"]) != strtolower($this->csvdb->database)) {
                             $check = false;
                         }
                     }
@@ -151,9 +157,9 @@ trait QueryTrait
         }
 
         if ($method == "INSERT") {
-            return $this->insert($fields);
+            return $this->csvdb->insert($fields);
         } else if ($method == "SELECT") {
-            $q = $this->select($fields);
+            $q = $this->csvdb->select($fields);
             if ($count) {
                 $q->count();
             }
@@ -168,9 +174,9 @@ trait QueryTrait
             }
             return $q->get();
         } else if ($method == "UPDATE") {
-            return $this->update($fields, $this->create_where($where_expr));
+            return $this->csvdb->update($fields, $this->create_where($where_expr));
         } else if ($method == "DELETE") {
-            return $this->delete($this->create_where($where_expr));
+            return $this->csvdb->delete($this->create_where($where_expr));
         }
         return array();
     }
@@ -267,5 +273,55 @@ trait QueryTrait
             }
         }
         return $insert;
+    }
+
+
+    /**
+     * @throws UnableToProcessCsv
+     * @throws InvalidArgument
+     * @throws CannotInsertRecord
+     * @throws \Exception
+     */
+    public function get(Converter $converter = null): array
+    {
+        $obj = $this->parser()->parse($this->query);
+
+        if (!empty($this->query) && $this->checkKeywords($obj) && $this->checkExpression($obj)) {
+            $method = array_keys($obj)[0];
+            $data = $this->prepareStmt($obj, $method);
+
+            // converter
+            if (isset($converter) && is_array($data)) {
+                $data = $converter->convert($data);
+            }
+
+            return $data;
+        } else {
+            throw new \Exception("There is an Error in your Query: $this->query; Please check the available Keywords [LINK]");
+        }
+    }
+
+    /**
+     * @throws InvalidArgument
+     * @throws \ReflectionException
+     * @throws Exception
+     * @throws \Exception|UnableToProcessCsv
+     */
+    public function export(string $type = ExportEnum::CSV): string
+    {
+        if (!ExportEnum::isValid($type)) {
+            throw new \Exception("Invalid Export Type: $type");
+        } else {
+            switch ($type) {
+                case ExportEnum::JSON:
+                    return json_encode($this->get(), JSON_PRETTY_PRINT);
+                case ExportEnum::SQL:
+                    return implode("\n", $this->get(new SQLConverter($this->csvdb->database)));
+                case ExportEnum::PHP:
+                    return var_export($this->get(), true);
+                default:
+                    return implode("\n", $this->get(new CSVConverter($this->csvdb->config->delimiter, $this->csvdb->config->headers)));
+            }
+        }
     }
 }

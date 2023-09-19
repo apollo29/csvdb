@@ -16,7 +16,7 @@ use CSVDB\Helpers\DatatypeTrait;
 use CSVDB\Helpers\Records;
 use CSVDB\History\HistoryTrait;
 use CSVDB\Query\Query;
-use CSVDB\Query\QueryTrait;
+use CSVDB\Query\QueryBuilder;
 use CSVDB\Schema\ConstraintsTrait;
 use CSVDB\Schema\DefaultTrait;
 use CSVDB\Schema\Schema;
@@ -26,9 +26,10 @@ use League\Csv\InvalidArgument;
 use League\Csv\Reader;
 use League\Csv\Statement;
 use League\Csv\TabularDataReader;
+use League\Csv\UnableToProcessCsv;
 use League\Csv\Writer;
 
-class CSVDB extends Query implements Builder\Statement
+class CSVDB implements Builder\Statement
 {
     use CacheTrait;
     use HistoryTrait;
@@ -233,6 +234,7 @@ class CSVDB extends Query implements Builder\Statement
     /**
      * @throws InvalidArgument
      * @throws Exception
+     * @throws UnableToProcessCsv
      */
     public function get(Converter $converter = null): array
     {
@@ -254,6 +256,7 @@ class CSVDB extends Query implements Builder\Statement
 
         // reset
         $this->reset();
+
         return $data;
     }
 
@@ -261,7 +264,7 @@ class CSVDB extends Query implements Builder\Statement
      * @throws InvalidArgument
      * @throws \ReflectionException
      * @throws Exception
-     * @throws \Exception
+     * @throws \Exception|UnableToProcessCsv
      */
     public function export(string $type = ExportEnum::CSV): string
     {
@@ -284,6 +287,13 @@ class CSVDB extends Query implements Builder\Statement
         }
     }
 
+    // Query
+
+    public function query(string $query): Query
+    {
+        return new QueryBuilder($query, $this);
+    }
+
     // UTIL
 
     private function reset(): void
@@ -294,6 +304,7 @@ class CSVDB extends Query implements Builder\Statement
         $this->order = array();
         $this->limit = 0;
         $this->count = false;
+        $this->query = null;
     }
 
     /**
