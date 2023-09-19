@@ -148,10 +148,10 @@ row1,test2_1,value5
     var_dump($data);
     echo "<hr />";
     */
-    //$data = $csvdb->query("SELECT * FROM phpunit WHERE header2 IN ('test2_1','test2_2','test2_3')");
+    $data = $csvdb->query("SELECT * FROM phpunit WHERE header2 IN ('test2_1','test2_2','test2_3')")->export(ExportEnum::CSV);
     //var_dump($data);
     echo "<hr />";
-    $data = $csvdb->select()->where([["header2"=>["test2_1","test2_2","test2_3"]],CSVDB::OR])->export(ExportEnum::CSV); //query("SELECT * FROM phpunit WHERE header3 IN ('test2_1','test2_2','test2_3')");
+    //$data = $csvdb->select()->where([["header2"=>["test2_1","test2_2","test2_3"]],CSVDB::OR])->export(ExportEnum::CSV); //query("SELECT * FROM phpunit WHERE header3 IN ('test2_1','test2_2','test2_3')");
     var_dump($data);
     echo "<hr />";
     /*

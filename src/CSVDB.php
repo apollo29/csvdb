@@ -15,6 +15,7 @@ use CSVDB\Helpers\CSVUtilities;
 use CSVDB\Helpers\DatatypeTrait;
 use CSVDB\Helpers\Records;
 use CSVDB\History\HistoryTrait;
+use CSVDB\Query\Query;
 use CSVDB\Query\QueryTrait;
 use CSVDB\Schema\ConstraintsTrait;
 use CSVDB\Schema\DefaultTrait;
@@ -27,7 +28,7 @@ use League\Csv\Statement;
 use League\Csv\TabularDataReader;
 use League\Csv\Writer;
 
-class CSVDB implements Builder\Statement
+class CSVDB extends Query implements Builder\Statement
 {
     use CacheTrait;
     use HistoryTrait;
@@ -36,8 +37,6 @@ class CSVDB implements Builder\Statement
     use ReadTrait;
     use UpdateTrait;
     use DeleteTrait;
-
-    use QueryTrait;
 
     use SchemaTrait;
     use ConstraintsTrait;
@@ -284,7 +283,6 @@ class CSVDB implements Builder\Statement
             }
         }
     }
-
 
     // UTIL
 

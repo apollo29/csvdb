@@ -36,15 +36,9 @@ trait QueryTrait
      * @throws \Exception
      * @throws UnableToProcessCsv
      */
-    public function query(string $query)
+    public function query2(string $query)
     {
-        $obj = $this->parser()->parse($query);
-        if ($this->checkKeywords($obj) && $this->checkExpression($obj)) {
-            $method = array_keys($obj)[0];
-            return $this->prepareStmt($obj, $method);
-        } else {
-            throw new \Exception("There is an Error in your Query: $query; Please check the available Keywords [LINK]");
-        }
+
     }
 
     private function checkKeywords(array $query): bool
