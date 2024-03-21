@@ -101,8 +101,9 @@ class QueryBuilder implements Query
         foreach ($query as $keyword => $expression) {
             foreach ($expression as $item) {
                 if ($keyword == "SELECT") {
-                    if ($item['expr_type'] == "colref" && $item['base_expr'] != "*") {
-                        $fields[] = $item['base_expr'];
+                    // todo check expr_type colref?? if ($item['expr_type'] == "colref" && $item['base_expr'] != "*") {
+                    if ($item['base_expr'] != "*") {
+                        $fields[] = str_replace(['"', "'"],"",$item['base_expr']);
                     }
                     if ($item['expr_type'] == "aggregate_function") {
                         $count = true;

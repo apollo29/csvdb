@@ -1,0 +1,61 @@
+﻿Spielrunde;Spielnummer;Spieldatum;Spielzeit;Teamname A;Teamname B;Spielort;Resultat
+25;1;18.03.2023;18:00;FC Zürich;FC Luzern;Letzigrund, Zürich - Stadion;1
+25;2;18.03.2023;20:30;FC Sion;Grasshopper Club Zürich;Tourbillon, Sion - Stade de Tourbillon;2
+25;3;19.03.2023;14:15;FC Winterthur;FC St. Gallen 1879;Schützenwiese, Winterthur - Platz 1;1
+25;4;19.03.2023;16:30;BSC Young Boys;FC Basel 1893;Stadion Wankdorf, Bern - Hauptfeld;1
+25;5;19.03.2023;16:30;FC Lugano;Servette FC;Stadio Comunale Cornaredo, Lugano - A;0
+26;101116;01.04.2023;20:30;FC Basel 1893;FC Winterthur;St. Jakob-Park, Basel - Stadion;
+26;101119;01.04.2023;18:00;Servette FC;BSC Young Boys;Stade de Genève,   - Terrain principal;
+26;101115;02.04.2023;14:15;Grasshopper Club Zürich;FC Lugano;Letzigrund, Zürich - Stadion;
+26;101117;02.04.2023;16:30;FC St. Gallen 1879;FC Zürich;kybunpark, St. Gallen - Stadion;
+26;101118;02.04.2023;16:30;FC Luzern;FC Sion;swissporarena, Luzern - Stadion;
+27;101122;08.04.2023;18:00;FC Zürich;FC Basel 1893;Letzigrund, Zürich - Stadion;
+27;101124;08.04.2023;20:30;FC Sion;Servette FC;Tourbillon, Sion - Stade de Tourbillon;
+27;101120;10.04.2023;16:30;FC Winterthur;FC Luzern;Schützenwiese, Winterthur - Platz 1;
+27;101121;10.04.2023;16:30;BSC Young Boys;Grasshopper Club Zürich;Stadion Wankdorf, Bern - Hauptfeld;
+27;101123;10.04.2023;14:15;FC Lugano;FC St. Gallen 1879;Stadio Comunale Cornaredo, Lugano - A;
+28;101128;15.04.2023;18:00;Servette FC;FC Lugano;Stade de Genève,   - Terrain principal;
+28;101129;15.04.2023;20:30;FC Luzern;FC Zürich;swissporarena, Luzern - Stadion;
+28;101125;16.04.2023;16:30;Grasshopper Club Zürich;FC Sion;Letzigrund, Zürich - Stadion;
+28;101126;16.04.2023;16:30;FC Basel 1893;BSC Young Boys;St. Jakob-Park, Basel - Stadion;
+28;101127;16.04.2023;14:15;FC St. Gallen 1879;FC Winterthur;kybunpark, St. Gallen - Stadion;
+29;101130;22.04.2023;18:00;FC Winterthur;Grasshopper Club Zürich;Schützenwiese, Winterthur - Platz 1;
+29;101131;22.04.2023;20:30;BSC Young Boys;Servette FC;Stadion Wankdorf, Bern - Hauptfeld;
+29;101132;23.04.2023;20:30;FC Zürich;FC St. Gallen 1879;Letzigrund, Zürich - Stadion;
+29;101133;23.04.2023;14:15;FC Basel 1893;FC Luzern;St. Jakob-Park, Basel - Stadion;
+29;101134;23.04.2023;16:30;FC Lugano;FC Sion;Stadio Comunale Cornaredo, Lugano - A;
+30;101135;25.04.2023;20:30;Grasshopper Club Zürich;BSC Young Boys;Letzigrund, Zürich - Stadion;
+30;101136;26.04.2023;20:30;FC St. Gallen 1879;FC Lugano;kybunpark, St. Gallen - Stadion;
+30;101138;26.04.2023;20:30;Servette FC;FC Zürich;Stade de Genève,   - Terrain principal;
+30;101137;27.04.2023;20:30;FC Sion;FC Basel 1893;Tourbillon, Sion - Stade de Tourbillon;
+30;101139;27.04.2023;20:30;FC Luzern;FC Winterthur;swissporarena, Luzern - Stadion;
+31;101143;29.04.2023;20:30;FC Lugano;Grasshopper Club Zürich;Stadio Comunale Cornaredo, Lugano - A;
+31;101144;29.04.2023;18:00;Servette FC;FC St. Gallen 1879;Stade de Genève,   - Terrain principal;
+31;101140;30.04.2023;16:30;FC Winterthur;FC Basel 1893;Schützenwiese, Winterthur - Platz 1;
+31;101141;30.04.2023;16:30;BSC Young Boys;FC Luzern;Stadion Wankdorf, Bern - Hauptfeld;
+31;101142;30.04.2023;14:15;FC Zürich;FC Sion;Letzigrund, Zürich - Stadion;
+32;101146;06.05.2023;20:30;FC St. Gallen 1879;BSC Young Boys;kybunpark, St. Gallen - Stadion;
+32;101147;06.05.2023;18:00;FC Sion;FC Winterthur;Tourbillon, Sion - Stade de Tourbillon;
+32;101145;07.05.2023;16:30;FC Basel 1893;FC Zürich;St. Jakob-Park, Basel - Stadion;
+32;101148;07.05.2023;14:15;FC Luzern;FC Lugano;swissporarena, Luzern - Stadion;
+32;101149;07.05.2023;16:30;Grasshopper Club Zürich;Servette FC;Letzigrund, Zürich - Stadion;
+33;101150;13.05.2023;20:30;Servette FC;FC Sion;Stade de Genève,   - Terrain principal;
+33;101151;13.05.2023;18:00;FC St. Gallen 1879;FC Basel 1893;kybunpark, St. Gallen - Stadion;
+33;101152;14.05.2023;14:15;BSC Young Boys;FC Zürich;Stadion Wankdorf, Bern - Hauptfeld;
+33;101153;14.05.2023;16:30;Grasshopper Club Zürich;FC Luzern;Letzigrund, Zürich - Stadion;
+33;101154;14.05.2023;16:30;FC Lugano;FC Winterthur;Stadio Comunale Cornaredo, Lugano - A;
+34;101157;20.05.2023;18:00;FC Winterthur;Servette FC;Schützenwiese, Winterthur - Platz 1;
+34;101159;20.05.2023;20:30;FC Luzern;FC St. Gallen 1879;swissporarena, Luzern - Stadion;
+34;101155;21.05.2023;16:30;FC Basel 1893;FC Lugano;St. Jakob-Park, Basel - Stadion;
+34;101156;21.05.2023;16:30;FC Zürich;Grasshopper Club Zürich;Letzigrund, Zürich - Stadion;
+34;101158;21.05.2023;14:15;FC Sion;BSC Young Boys;Tourbillon, Sion - Stade de Tourbillon;
+35;101160;25.05.2023;20:30;FC Lugano;BSC Young Boys;Stadio Comunale Cornaredo, Lugano - A;
+35;101161;25.05.2023;20:30;Servette FC;FC Basel 1893;Stade de Genève,   - Terrain principal;
+35;101162;25.05.2023;20:30;FC Sion;FC Luzern;Tourbillon, Sion - Stade de Tourbillon;
+35;101163;25.05.2023;20:30;Grasshopper Club Zürich;FC St. Gallen 1879;Letzigrund, Zürich - Stadion;
+35;101164;25.05.2023;20:30;FC Winterthur;FC Zürich;Schützenwiese, Winterthur - Platz 1;
+36;101165;29.05.2023;16:30;FC Zürich;FC Lugano;Letzigrund, Zürich - Stadion;
+36;101166;29.05.2023;16:30;FC Basel 1893;Grasshopper Club Zürich;St. Jakob-Park, Basel - Stadion;
+36;101167;29.05.2023;16:30;BSC Young Boys;FC Winterthur;Stadion Wankdorf, Bern - Hauptfeld;
+36;101168;29.05.2023;16:30;FC St. Gallen 1879;FC Sion;kybunpark, St. Gallen - Stadion;
+36;101169;29.05.2023;16:30;FC Luzern;Servette FC;swissporarena, Luzern - Stadion;

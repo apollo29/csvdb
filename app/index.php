@@ -25,7 +25,7 @@
 
     require '../vendor/autoload.php';
 
-    $csvdb = new CSVDB(__DIR__ . "/csv/phpunit.csv", new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, CSVConfig::DELIMITER, CSVConfig::HEADERS, CSVConfig::CACHE, true, false));
+    $csvdb = new CSVDB(__DIR__ . "/csv/games.csv", new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, ";", CSVConfig::HEADERS, CSVConfig::CACHE, true, false));
 
     $records = [
         [1, 2, 3],
@@ -122,7 +122,7 @@ row1,test2_1,value5
     $csvdb->dump($test2);
 
     $data = $csvdb->select()->get();
-    */
+    
     $csvdb->schema(array(
         'id' => array(
             "type" => "integer",
@@ -143,18 +143,24 @@ row1,test2_1,value5
             "default" => "current_timestamp"
         )
     ));
-    /*
+    
     $data = $csvdb->query("INSERT INTO phpunit (id, header1, header2, header3) VALUES (99, 'rowX', 'test', 12345)");
     var_dump($data);
     echo "<hr />";
     */
-    $data = $csvdb->query("SELECT * FROM phpunit WHERE header2 IN ('test2_1','test2_2')")->export();
+    $data = $csvdb->query("SELECT 'Teamname A' FROM games LIMIT 0, 2")->get();
 
     var_dump($data);
     echo "<hr />";
-    $data = $csvdb->select()->where([["header2"=>["test2_1","test2_2"]],CSVDB::OR])->export(); //query("SELECT * FROM phpunit WHERE header3 IN ('test2_1','test2_2','test2_3')");
+
+    
+    $data = $csvdb->select(["Spieldatum", "Teamname A"])->get();
+
     var_dump($data);
-    echo "<hr />";
+
+    //$data = $csvdb->select()->where([["header2"=>["test2_1","test2_2"]],CSVDB::OR])->export(); //query("SELECT * FROM phpunit WHERE header3 IN ('test2_1','test2_2','test2_3')");
+    //var_dump($data);
+    //echo "<hr />";
     /*
     $data = $csvdb->query("UPDATE phpunit SET header1 = 'update_rowX', header2 = 'update_test', header3 = 11111 WHERE id = 99");
     var_dump($data);
