@@ -220,13 +220,8 @@ class CSVDB implements Builder\Statement
         if ($this->offset > 0) {
             $stmt = $stmt->offset($this->offset);
         }
-
-        // select
-        if (count($this->select) > 0) {
-            $records = $stmt->process($reader, $this->select);
-        } else {
-            $records = $stmt->process($reader);
-        }
+        
+        $records = $stmt->process($reader);
 
         return $records;
     }
@@ -253,11 +248,27 @@ class CSVDB implements Builder\Statement
         if (!isset($data)) {
             $data = $records->jsonSerialize();
         }
+       
+
+        // select
+        if (count($this->select) > 0) {
+            $data = $this->filter_select($data);
+        }
 
         // reset
         $this->reset();
 
         return $data;
+    }
+
+    private function filter_select(array $data): array {
+        $filter=[];
+        foreach($data as $row) {
+            $filter[]=array_filter($row, function($k) {
+                return in_array($k, $this->select);
+            }, ARRAY_FILTER_USE_KEY);
+        }
+        return $filter;
     }
 
     /**

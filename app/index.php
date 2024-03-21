@@ -25,7 +25,7 @@
 
     require '../vendor/autoload.php';
 
-    $csvdb = new CSVDB(__DIR__ . "/csv/games.csv", new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, ";", CSVConfig::HEADERS, CSVConfig::CACHE, true, false));
+    $csvdb = new CSVDB(__DIR__ . "/csv/games.csv", new CSVConfig(CSVConfig::INDEX, CSVConfig::ENCODING, ";", CSVConfig::HEADERS, CSVConfig::CACHE, false, false));
 
     $records = [
         [1, 2, 3],
@@ -148,7 +148,7 @@ row1,test2_1,value5
     var_dump($data);
     echo "<hr />";
     */
-    $data = $csvdb->query("SELECT 'Teamname A' FROM games LIMIT 0, 2")->get();
+    $data = $csvdb->query("SELECT Spieldatum, 'Teamname A' FROM games LIMIT 0, 2")->get();
 
     var_dump($data);
     echo "<hr />";
